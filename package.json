@@ -1,0 +1,49 @@
+{
+  "name": "bettervote",
+  "version": "0.1.0",
+  "description": "Ranked choice voting website",
+  "scripts": {
+    "lint": "eslint . --ext .ts",
+    "test": "npm run lint && npm run build && jest",
+    "build": "tsc",
+    "start": "npm run build && node dist/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "github:AnnikaCodes/bettervote"
+  },
+  "author": "Annika L. <annika0uwu@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/AnnikaCodes/bettervote/issues"
+  },
+  "homepage": "https://github.com/AnnikaCodes/bettervote#readme",
+  "dependencies": {
+    "typescript": "^4.4.2"
+  },
+  "devDependencies": {
+    "@krytis/eslint-config": "^0.2.1",
+    "@pkmn/eslint-config": "^2.1.0",
+    "@types/jest": "^27.0.3",
+    "@typescript-eslint/eslint-plugin": "^5.5.0",
+    "@typescript-eslint/parser": "^5.5.0",
+    "codecov": "^3.8.3",
+    "eslint": "^8.4.0",
+    "eslint-plugin-jest": "^25.3.0",
+    "jest": "^27.4.3",
+    "ts-jest": "^27.0.7"
+  },
+  "eslintConfig": {
+    "extends": "@krytis"
+  },
+  "jest": {
+    "collectCoverage": true,
+    "coverageDirectory": "coverage",
+    "coverageProvider": "v8",
+    "testEnvironment": "node",
+    "testMatch": ["**/tests/*.ts"],
+    "transform": {
+        "^.+\\.(ts|tsx)$": "ts-jest"
+    }
+  }
+}

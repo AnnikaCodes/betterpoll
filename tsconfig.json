@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "target": "es6",
+        "module": "commonjs",
+        "outDir": "./dist",
+        "rootDirs": ["./src", "./tests"],
+        "downlevelIteration": true,
+        "strict": true
+    },
+}
