@@ -1,4 +1,2 @@
 /coverage
-/dist
-package-lock.json
-/node_modules
+/target
