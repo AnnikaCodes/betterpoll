@@ -1,3 +1,4 @@
+use std::net::IpAddr;
 use std::time::SystemTime;
 
 // Poll code
@@ -9,12 +10,10 @@ use tallystick::schulze::Variant;
 use tallystick::RankedCandidate;
 use tallystick::TallyError;
 
-/// idx 0 is 1st choice, etc
-pub struct RankedChoiceVote(Vec<String>);
-impl RankedChoiceVote {
-    pub fn from_vec(candidates: Vec<String>) -> Self {
-        RankedChoiceVote(candidates)
-    }
+pub struct RankedChoiceVote {
+    /// idx 0 is 1st choice, etc
+    pub ranked_choices: Vec<String>,
+    pub voter_ip: IpAddr,
 }
 
 pub enum VotingMethod {
@@ -31,6 +30,7 @@ pub struct Poll {
     pub num_winners: usize,
     pub winners: Option<Vec<RankedCandidate<String>>>,
     pub method: VotingMethod,
+    pub prohibit_double_vote_by_ip: bool,
 }
 
 impl Poll {
@@ -62,6 +62,7 @@ impl Poll {
             num_winners,
             winners: None,
             method: VotingMethod::Schulze,
+            prohibit_double_vote_by_ip: true,
         }
     }
 
@@ -73,7 +74,7 @@ impl Poll {
                     SchulzeTally::<String, u64>::new(self.num_winners, Variant::Winning);
 
                 for vote in &self.votes {
-                    tally.add(&vote.0)?;
+                    tally.add(&vote.ranked_choices)?;
                 }
 
                 tally.winners().into_vec()
