@@ -11,8 +11,8 @@ CREATE TABLE polls (
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
     num_winners INTEGER NOT NULL,
-    -- Null if the poll is ongoing
-    winners TEXT[],
+    -- 0 for Schulze
+    method INTEGER NOT NULL
 );
 
 CREATE TABLE votes (
@@ -22,6 +22,13 @@ CREATE TABLE votes (
     voter_fingerprint TEXT,
     -- 1st choice is in preferences[0], etc.
     preferences TEXT[] NOT NULL,
+);
+
+CREATE TABLE winners (
+    poll_id TEXT NOT NULL REFERENCES polls(id),
+    candidate TEXT NOT NULL,
+    rank INTEGER NOT NULL,
+    PRIMARY KEY (poll_id, candidate)
 );
 
 CREATE TABLE db_info (
