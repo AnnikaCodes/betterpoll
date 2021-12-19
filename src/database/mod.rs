@@ -1,8 +1,7 @@
 // Generic database code
 pub mod postgres;
-use crate::poll::{Poll, RankedChoiceVote};
 use crate::error::ErrorKind;
-
+use crate::poll::{Poll, RankedChoiceVote};
 
 /// Generic database trait; an implementation be used with Rocket for fun stuff
 ///

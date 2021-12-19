@@ -1,13 +1,13 @@
 use std::time::SystemTime;
 
 // Poll code
-use std::time::Duration;
 use rand::Rng;
-use tallystick::RankedCandidate;
-use tallystick::TallyError;
-use tallystick::irv::Tally;
+use std::time::Duration;
+
 use tallystick::schulze::SchulzeTally;
 use tallystick::schulze::Variant;
+use tallystick::RankedCandidate;
+use tallystick::TallyError;
 
 /// idx 0 is 1st choice, etc
 pub struct RankedChoiceVote(Vec<String>);
@@ -39,7 +39,7 @@ impl Poll {
         title: String,
         candidates: Vec<String>,
         length: Duration,
-        num_winners: usize
+        num_winners: usize,
     ) -> Self {
         let id = id.unwrap_or_else(|| {
             let mut rng = rand::thread_rng();
@@ -69,7 +69,8 @@ impl Poll {
     pub fn find_winners(&self) -> Result<Vec<RankedCandidate<String>>, TallyError> {
         let winners = match self.method {
             VotingMethod::Schulze => {
-                let mut tally = SchulzeTally::<String, u64>::new(self.num_winners, Variant::Winning);
+                let mut tally =
+                    SchulzeTally::<String, u64>::new(self.num_winners, Variant::Winning);
 
                 for vote in &self.votes {
                     tally.add(&vote.0)?;

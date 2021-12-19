@@ -1,6 +1,6 @@
 mod database;
-mod poll;
 mod error;
+mod poll;
 
 // TODO: write unit tests for databases, APIs, etc...
 

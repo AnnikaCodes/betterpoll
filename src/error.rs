@@ -9,15 +9,16 @@ pub enum ErrorKind {
     Internal(InternalError),
 }
 
-impl<T> From<T> for ErrorKind where InternalError: From<T>  {
+impl<T> From<T> for ErrorKind
+where
+    InternalError: From<T>,
+{
     fn from(err: T) -> Self {
         ErrorKind::Internal(err.into())
     }
 }
 
-pub enum VisibleError {
-
-}
+pub enum VisibleError {}
 
 pub enum InternalError {
     DatabaseError(postgres::Error),
