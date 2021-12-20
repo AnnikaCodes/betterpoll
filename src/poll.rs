@@ -8,18 +8,22 @@ use std::time::Duration;
 use tallystick::schulze::SchulzeTally;
 use tallystick::schulze::Variant;
 use tallystick::RankedCandidate;
-use tallystick::TallyError;
 
+use crate::error::ErrorKind;
+
+#[derive(Debug, PartialEq, Clone)]
 pub struct RankedChoiceVote {
     /// idx 0 is 1st choice, etc
     pub ranked_choices: Vec<String>,
     pub voter_ip: IpAddr,
 }
 
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum VotingMethod {
     Schulze,
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub struct Poll {
     pub id: String,
     pub title: String,
@@ -41,13 +45,10 @@ impl Poll {
         length: Duration,
         num_winners: usize,
     ) -> Self {
-        let id = id.unwrap_or_else(|| {
-            let mut rng = rand::thread_rng();
-            format!("{:16X}{:16X}", rng.gen::<u64>(), rng.gen::<u64>())
-        });
+        let id = id.unwrap_or_else(|| format!("{:16x}", rand::random::<u64>()));
         let creation_time = SystemTime::now();
         let end_time = creation_time.checked_add(length).unwrap_or_else(|| {
-            eprintln!("Duration for poll {} is too long! ({:?})", &id, length);
+            eprintln!("WARNING: Duration for the poll with ID '{}' is too long! ({} seconds)", &id, length.as_secs());
             eprintln!("This should have been caught already - defaulting to the current time (poll ends immediately)");
             creation_time
         });
@@ -67,11 +68,14 @@ impl Poll {
     }
 
     /// Finds the winners
-    pub fn find_winners(&self) -> Result<Vec<RankedCandidate<String>>, TallyError> {
+    pub fn find_winners(&self) -> Result<Vec<RankedCandidate<String>>, ErrorKind> {
         let winners = match self.method {
             VotingMethod::Schulze => {
                 let mut tally =
                     SchulzeTally::<String, u64>::new(self.num_winners, Variant::Winning);
+                for candidate in &self.candidates {
+                    tally.add_candidate(candidate.clone());
+                }
 
                 for vote in &self.votes {
                     tally.add(&vote.ranked_choices)?;
@@ -84,7 +88,7 @@ impl Poll {
         Ok(winners)
     }
 
-    pub fn finish(&mut self) -> Result<(), TallyError> {
+    pub fn finish(&mut self) -> Result<(), ErrorKind> {
         let winners = self.find_winners()?;
         self.winners = Some(winners);
         Ok(())

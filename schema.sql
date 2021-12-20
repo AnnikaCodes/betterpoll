@@ -17,11 +17,11 @@ CREATE TABLE polls (
 
 CREATE TABLE votes (
     poll_id TEXT NOT NULL REFERENCES polls(id),
-    voter_ip TEXT NOT NULL,
+    voter_ip INET NOT NULL,
     -- Reserved for future use
     voter_fingerprint TEXT,
     -- 1st choice is in preferences[0], etc.
-    preferences TEXT[] NOT NULL,
+    preferences TEXT[] NOT NULL
 );
 
 CREATE TABLE winners (

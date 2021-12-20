@@ -4,6 +4,7 @@
 
 use std::num::TryFromIntError;
 
+#[derive(Debug)]
 pub enum ErrorKind {
     PubliclyVisible(VisibleError),
     Internal(InternalError),
@@ -18,17 +19,26 @@ where
     }
 }
 
+#[derive(Debug)]
 pub enum VisibleError {}
 
+#[derive(Debug)]
 pub enum InternalError {
-    DatabaseError(postgres::Error),
+    Database(postgres::Error),
     UnknownVotingMethodDiscriminant(i32),
     InvalidNumWinners(i32, TryFromIntError),
     InvalidWinnerRank(i32, TryFromIntError),
+    TallyStick(tallystick::TallyError),
 }
 
 impl From<postgres::Error> for InternalError {
     fn from(err: postgres::Error) -> Self {
-        InternalError::DatabaseError(err)
+        InternalError::Database(err)
+    }
+}
+
+impl From<tallystick::TallyError> for InternalError {
+    fn from(err: tallystick::TallyError) -> Self {
+        InternalError::TallyStick(err)
     }
 }
