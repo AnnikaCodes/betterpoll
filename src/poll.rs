@@ -94,3 +94,61 @@ impl Poll {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::borrow::Cow;
+
+    use super::*;
+
+    #[test]
+    fn autogen_random_id() {
+        let poll1 = Poll::new(None, "".to_string(), vec![], Duration::from_secs(1), 1);
+        let poll2 = Poll::new(None, "".to_string(), vec![], Duration::from_secs(1), 1);
+
+        // Has a 1/(2^64 - 1) chance of failing when there is no bug.
+        // This is effectively negligible.
+        assert_ne!(poll1.id, poll2.id);
+    }
+
+    #[test]
+    fn support_custom_id() {
+        let id = "custom_id".to_string();
+        let poll = Poll::new(Some(id.clone()), "".to_string(), vec![], Duration::from_secs(1), 1);
+
+        assert_eq!(poll.id, id);
+    }
+
+    #[test]
+    fn winners() {
+        let a = String::from("a");
+        let b = String::from("b");
+        let c = String::from("c");
+
+        let mut poll = Poll::new(None, "".to_string(), vec![a.clone(), b.clone(), c.clone()], Duration::from_secs(1), 1);
+        poll.votes.push(RankedChoiceVote {
+            ranked_choices: vec![c.clone(), a.clone(), b.clone()],
+            voter_ip: "127.0.0.1".parse().unwrap(),
+        });
+        poll.votes.push(RankedChoiceVote {
+            ranked_choices: vec![a.clone(), c.clone(), b.clone()],
+            voter_ip: "127.0.0.2".parse().unwrap(),
+        });
+        poll.votes.push(RankedChoiceVote {
+            ranked_choices: vec![a.clone(), c.clone()],
+            voter_ip: "127.0.0.3".parse().unwrap(),
+        });
+        poll.votes.push(RankedChoiceVote {
+            ranked_choices: vec![b.clone(), c.clone()],
+            voter_ip: "127.0.0.3".parse().unwrap(),
+        });
+        poll.votes.push(RankedChoiceVote {
+            ranked_choices: vec![b.clone(), c.clone()],
+            voter_ip: "127.0.0.3".parse().unwrap(),
+        });
+
+        poll.finish().unwrap();
+
+        assert_eq!(poll.winners.unwrap()[0].candidate, c);
+    }
+}
