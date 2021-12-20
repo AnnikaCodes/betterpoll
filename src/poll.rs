@@ -2,7 +2,7 @@ use std::net::IpAddr;
 use std::time::SystemTime;
 
 // Poll code
-use rand::Rng;
+
 use std::time::Duration;
 
 use tallystick::schulze::SchulzeTally;

@@ -2,8 +2,6 @@
 //!
 //! TODO: can we prepare statements? investigate how this'd work with Rocket
 
-
-
 use tallystick::RankedCandidate;
 
 use super::Database;
@@ -155,7 +153,7 @@ impl Database<&mut postgres::Client> for Postgres {
     fn set_poll_winners(
         conn: &mut postgres::Client,
         id: &String,
-        winners: &Vec<RankedCandidate<String>>,
+        winners: &[RankedCandidate<String>],
     ) -> Result<(), ErrorKind> {
         let winner_insertion =
             &conn.prepare("INSERT INTO winners (poll_id, candidate, rank) VALUES ($1, $2, $3)")?;
@@ -173,13 +171,15 @@ impl Database<&mut postgres::Client> for Postgres {
 mod tests {
     use std::time::Duration;
 
-    use postgres::NoTls;
     use super::*;
     use crate::poll::Poll;
+    use postgres::NoTls;
 
     fn get_conn() -> Result<postgres::Client, postgres::Error> {
         dotenv::dotenv().ok();
-        let db_url = std::env::var("TEST_DATABASE").expect("The TEST_DATABASE environment variable must be set when testing database features");
+        let db_url = std::env::var("TEST_DATABASE").expect(
+            "The TEST_DATABASE environment variable must be set when testing database features",
+        );
         postgres::Client::connect(&db_url, NoTls)
     }
 
@@ -189,27 +189,47 @@ mod tests {
         let new_poll = Poll::new(
             None,
             "Test Poll 1".to_owned(),
-            vec!["Candidate 1".to_owned(), "Candidate 2".to_owned(), "Candidate 3".to_owned()],
+            vec![
+                "Candidate 1".to_owned(),
+                "Candidate 2".to_owned(),
+                "Candidate 3".to_owned(),
+            ],
             Duration::from_secs(24 * 60 * 60),
             2,
         );
         let mut in_progress_poll = Poll::new(
             None,
             "Test Poll 2".to_owned(),
-            vec!["Candidate 1".to_owned(), "Candidate 2".to_owned(), "Candidate 3".to_owned()],
+            vec![
+                "Candidate 1".to_owned(),
+                "Candidate 2".to_owned(),
+                "Candidate 3".to_owned(),
+            ],
             Duration::from_secs(24 * 60 * 60),
             2,
         );
         in_progress_poll.votes.push(RankedChoiceVote {
-            ranked_choices: vec!["Candidate 1".to_owned(), "Candidate 3".to_owned(), "Candidate 2".to_owned()],
+            ranked_choices: vec![
+                "Candidate 1".to_owned(),
+                "Candidate 3".to_owned(),
+                "Candidate 2".to_owned(),
+            ],
             voter_ip: "127.0.0.1".parse().unwrap(),
         });
         in_progress_poll.votes.push(RankedChoiceVote {
-            ranked_choices: vec!["Candidate 2".to_owned(), "Candidate 3".to_owned(), "Candidate 1".to_owned()],
+            ranked_choices: vec![
+                "Candidate 2".to_owned(),
+                "Candidate 3".to_owned(),
+                "Candidate 1".to_owned(),
+            ],
             voter_ip: "127.0.0.2".parse().unwrap(),
         });
         in_progress_poll.votes.push(RankedChoiceVote {
-            ranked_choices: vec!["Candidate 2".to_owned(), "Candidate 1".to_owned(), "Candidate 3".to_owned()],
+            ranked_choices: vec![
+                "Candidate 2".to_owned(),
+                "Candidate 1".to_owned(),
+                "Candidate 3".to_owned(),
+            ],
             voter_ip: "127.0.0.3".parse().unwrap(),
         });
 
@@ -221,16 +241,14 @@ mod tests {
             // before a poll is saved, a poll with that ID shouldn't exist
             assert!(
                 Postgres::get_poll_by_id(conn, &poll.id)?.is_none(),
-                "A poll with ID {} already exists", poll.id
+                "A poll with ID {} already exists",
+                poll.id
             );
 
             Postgres::add_poll(conn, &poll)?;
 
             // after a poll is saved, getting the poll should contain the same data
-            assert_eq!(
-                Postgres::get_poll_by_id(conn, &poll.id)?,
-                Some(poll)
-            );
+            assert_eq!(Postgres::get_poll_by_id(conn, &poll.id)?, Some(poll));
         }
 
         Ok(())
@@ -242,29 +260,51 @@ mod tests {
         let poll = Poll::new(
             None,
             "Test Poll".to_owned(),
-            vec!["Candidate 1".to_owned(), "Candidate 2".to_owned(), "Candidate 3".to_owned()],
+            vec![
+                "Candidate 1".to_owned(),
+                "Candidate 2".to_owned(),
+                "Candidate 3".to_owned(),
+            ],
             Duration::from_secs(24 * 60 * 60),
             1,
         );
         let conn = &mut get_conn()?;
         Postgres::add_poll(conn, &poll)?;
 
-        assert_eq!(Postgres::get_poll_by_id(conn, &poll.id)?.unwrap().votes, vec![], "should start with no votes");
+        assert_eq!(
+            Postgres::get_poll_by_id(conn, &poll.id)?.unwrap().votes,
+            vec![],
+            "should start with no votes"
+        );
 
         let vote1 = RankedChoiceVote {
-            ranked_choices: vec!["Candidate 1".to_owned(), "Candidate 2".to_owned(), "Candidate 3".to_owned()],
+            ranked_choices: vec![
+                "Candidate 1".to_owned(),
+                "Candidate 2".to_owned(),
+                "Candidate 3".to_owned(),
+            ],
             voter_ip: "127.0.0.1".parse().unwrap(),
         };
         let vote2 = RankedChoiceVote {
-            ranked_choices: vec!["Candidate 2".to_owned(), "Candidate 3".to_owned(), "Candidate 1".to_owned()],
+            ranked_choices: vec![
+                "Candidate 2".to_owned(),
+                "Candidate 3".to_owned(),
+                "Candidate 1".to_owned(),
+            ],
             voter_ip: "127.0.0.2".parse().unwrap(),
         };
 
         Postgres::add_vote_to_poll(conn, &poll.id, &vote1)?;
-        assert_eq!(Postgres::get_poll_by_id(conn, &poll.id)?.unwrap().votes, vec![vote1.clone()]);
+        assert_eq!(
+            Postgres::get_poll_by_id(conn, &poll.id)?.unwrap().votes,
+            vec![vote1.clone()]
+        );
 
         Postgres::add_vote_to_poll(conn, &poll.id, &vote2)?;
-        assert_eq!(Postgres::get_poll_by_id(conn, &poll.id)?.unwrap().votes, vec![vote1, vote2]);
+        assert_eq!(
+            Postgres::get_poll_by_id(conn, &poll.id)?.unwrap().votes,
+            vec![vote1, vote2]
+        );
 
         Ok(())
     }
@@ -275,14 +315,22 @@ mod tests {
         let poll = Poll::new(
             None,
             "Test Poll".to_owned(),
-            vec!["Candidate 1".to_owned(), "Candidate 2".to_owned(), "Candidate 3".to_owned()],
+            vec![
+                "Candidate 1".to_owned(),
+                "Candidate 2".to_owned(),
+                "Candidate 3".to_owned(),
+            ],
             Duration::from_secs(24 * 60 * 60),
             2,
         );
         let conn = &mut get_conn()?;
         Postgres::add_poll(conn, &poll)?;
 
-        assert_eq!(Postgres::get_poll_by_id(conn, &poll.id)?.unwrap().winners, None, "should start without winners");
+        assert_eq!(
+            Postgres::get_poll_by_id(conn, &poll.id)?.unwrap().winners,
+            None,
+            "should start without winners"
+        );
 
         let winners = vec![
             RankedCandidate {
@@ -296,7 +344,10 @@ mod tests {
         ];
 
         Postgres::set_poll_winners(conn, &poll.id, &winners)?;
-        assert_eq!(Postgres::get_poll_by_id(conn, &poll.id)?.unwrap().winners, Some(winners));
+        assert_eq!(
+            Postgres::get_poll_by_id(conn, &poll.id)?.unwrap().winners,
+            Some(winners)
+        );
 
         Ok(())
     }
@@ -308,27 +359,42 @@ mod tests {
         let poll = Poll::new(
             None,
             "Test Poll".to_owned(),
-            vec!["Candidate 1".to_owned(), "Candidate 2".to_owned(), "Candidate 3".to_owned()],
+            vec![
+                "Candidate 1".to_owned(),
+                "Candidate 2".to_owned(),
+                "Candidate 3".to_owned(),
+            ],
             length,
             1,
         );
         let conn = &mut get_conn()?;
 
         Postgres::add_poll(conn, &poll)?;
-        Postgres::add_vote_to_poll(conn, &poll.id, &RankedChoiceVote {
-            ranked_choices: vec!["Candidate 1".to_owned(), "Candidate 2".to_owned(), "Candidate 3".to_owned()],
-            voter_ip: "127.0.0.1".parse().unwrap(),
-        })?;
-        assert_eq!(Postgres::get_poll_by_id(conn, &poll.id)?.unwrap().winners, None);
-
+        Postgres::add_vote_to_poll(
+            conn,
+            &poll.id,
+            &RankedChoiceVote {
+                ranked_choices: vec![
+                    "Candidate 1".to_owned(),
+                    "Candidate 2".to_owned(),
+                    "Candidate 3".to_owned(),
+                ],
+                voter_ip: "127.0.0.1".parse().unwrap(),
+            },
+        )?;
+        assert_eq!(
+            Postgres::get_poll_by_id(conn, &poll.id)?.unwrap().winners,
+            None
+        );
 
         std::thread::sleep(length);
-        assert_eq!(Postgres::get_poll_by_id(conn, &poll.id)?.unwrap().winners, Some(vec![
-            RankedCandidate {
+        assert_eq!(
+            Postgres::get_poll_by_id(conn, &poll.id)?.unwrap().winners,
+            Some(vec![RankedCandidate {
                 candidate: "Candidate 1".to_owned(),
                 rank: 0,
-            },
-        ]));
+            },])
+        );
 
         Ok(())
     }

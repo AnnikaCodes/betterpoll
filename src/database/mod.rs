@@ -1,7 +1,6 @@
 // Generic database code
 pub mod postgres;
 
-
 use tallystick::RankedCandidate;
 
 use crate::error::ErrorKind;
@@ -17,6 +16,6 @@ pub trait Database<T> {
     fn set_poll_winners(
         conn: T,
         id: &String,
-        winners: &Vec<RankedCandidate<String>>,
+        winners: &[RankedCandidate<String>],
     ) -> Result<(), ErrorKind>;
 }
