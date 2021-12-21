@@ -114,7 +114,13 @@ mod tests {
     #[test]
     fn support_custom_id() {
         let id = "custom_id".to_string();
-        let poll = Poll::new(Some(id.clone()), "".to_string(), vec![], Duration::from_secs(1), 1);
+        let poll = Poll::new(
+            Some(id.clone()),
+            "".to_string(),
+            vec![],
+            Duration::from_secs(1),
+            1,
+        );
 
         assert_eq!(poll.id, id);
     }
@@ -125,7 +131,13 @@ mod tests {
         let b = String::from("b");
         let c = String::from("c");
 
-        let mut poll = Poll::new(None, "".to_string(), vec![a.clone(), b.clone(), c.clone()], Duration::from_secs(1), 1);
+        let mut poll = Poll::new(
+            None,
+            "".to_string(),
+            vec![a.clone(), b.clone(), c.clone()],
+            Duration::from_secs(1),
+            1,
+        );
         poll.votes.push(RankedChoiceVote {
             ranked_choices: vec![c.clone(), a.clone(), b.clone()],
             voter_ip: "127.0.0.1".parse().unwrap(),

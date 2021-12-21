@@ -9,7 +9,7 @@ edition = "2021"
 dotenv = "0.15.0"
 postgres = "0.19.2"
 rand = "0.8.4"
-rocket = "0.4.10"
+rocket = { version = "0.5.0-rc.1", features = ["json"] }
 tallystick = "0.4.3"
 
 [features]
