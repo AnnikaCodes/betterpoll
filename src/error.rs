@@ -2,7 +2,7 @@
 //!
 //! TODO: consider using anyhow or other error handling library?
 
-use std::num::TryFromIntError;
+use std::{fmt::Display, num::TryFromIntError};
 
 #[derive(Debug)]
 pub enum ErrorKind {
@@ -20,7 +20,17 @@ where
 }
 
 #[derive(Debug)]
-pub enum VisibleError {}
+pub enum VisibleError {
+    PollDoesNotExist,
+}
+
+impl Display for VisibleError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            VisibleError::PollDoesNotExist => write!(f, "No poll was found with the specified ID"),
+        }
+    }
+}
 
 #[derive(Debug)]
 pub enum InternalError {
