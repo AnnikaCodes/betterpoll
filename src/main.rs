@@ -25,7 +25,7 @@ fn not_found() -> Html<String> {
 }
 
 #[launch]
-fn rocket() -> _ {
+pub fn rocket() -> _ {
     rocket::build()
         .register("/", catchers![not_found])
         .attach(PostgresConnection::fairing())

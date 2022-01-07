@@ -1,0 +1,7 @@
+# Database for testing
+[global.databases.test_db]
+url = "postgres://root:root@localhost/test_db"
+
+# Database for production
+[global.databases.production_db]
+url = "postgres://root:root@localhost/production_db"

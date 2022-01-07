@@ -9,7 +9,8 @@ use crate::{
     poll::*,
 };
 
-#[database("postgres_db")]
+#[cfg_attr(not(test), database("production_db"))]
+#[cfg_attr(test, database("test_db"))]
 pub struct PostgresConnection(pub postgres::Client);
 
 impl PostgresConnection {

@@ -1,11 +1,33 @@
 # bettervote
 ## API
-Something along these lines (poll IDs should be integers or hexstrings or something):
+Bettervote exposes a RESTful API:
 - `POST /api/<pollid>/vote` with candidate choices to vote
-    - provided data should be JSON of the form `{"choices":[]}`, where the `choices` key is an array of candidate strings
-    - response will be `{"success": true}` or equivalent JSON if the vote succeeds, and `{"success": false, "error": <errorstring>}` or equivalent if it fails (where `<errorstring>` is a string explaining the error that occured)
-- `GET /api/:pollid` to get info about a poll
-- `POST /api/:pollid/create` (maybe `PUT`?) with candidates + voting system + expiry time/offset to create a poll
+    - Provided data should be JSON of the form `{"choices":[]}`, where the `choices` key is an array of candidate strings
+    - Response will be `{"success": true}` or equivalent JSON if the vote succeeds, and `{"success": false, "error": <errorstring>}` or equivalent if it fails (where `<errorstring>` is a string explaining the error that occured)
+- `GET /api/poll/<pollid>` to get info about a poll
+    - In the event of an error, the response will be JSON of the form `{"success": false, "error": <errorstring>}`, where `<errorstring>` is a human-readable string describing the error that occurred.
+    - On success, the response will be JSON with the following properties:
+        - `success` (boolean): `true`.
+        - `name` (string): the name of the poll.
+        - `candidates` (array of strings): choices for which users can vote.
+        - `creationTime` (integer): UNIX timestamp at which the poll began (in seconds).
+        - `endingTime` (integer): UNIX timestamp at which the poll ends (in seconds).
+        - `numWinners` (integer): number of winners the poll has.
+        - `protection` (string or null): `"ip"` if votes by the same IP address are forbidden, and `null` otherwise.
+        - `ended` (boolean): `true` if the poll has ended, otherwise `false`.
+    - If the poll has ended, the following additional properties will be specified in the response JSON:
+        - `winners` (array of strings): the winner(s) of the poll.
+- `POST /api/create` to create a poll
+    - Provided data should be JSON, with the following **mandatory** properties:
+        - `name` (string): the name for the poll.
+        - `candidates` (array of strings): choices for which users can vote.
+        - `duration` (integer): the amount of time after which the poll will expire, in seconds. Must be positive.
+        - `numWinners` (integer): the number of winners that the poll can have. Must be greater than 0 and less than the number of candidates provided.
+    - The following properties are **optional**:
+        - `id` (string): a custom URL for the poll. Must be a string with at least 1 and at most 32 characters.
+        - `protection` (string): the protection method to use to prevent double voting. Currently, the only acceptable values are `ip` (prevents multiple votes from the same IP address) and `none` (allows all incoming votes). In the future, more protection methods may be implemented.
+    - Response on success is JSON of the form `{"success": true, "id": <id>}`, where `<id>` is the poll's ID. On error, the response will be JSON of the form `{"success": false, "error": <errorstring>}`, where `<errorstring>` is a human-readable string describing the error that occurred.
+
 
 A frontend will also need to be worked out.
 That can probably go into a separate repository, but should access this API from the browser
@@ -22,6 +44,9 @@ Implements a way to store information needed for the website.
 - should store votes associated with a given poll (candidate choices, some way to identify the voter)
     - consider making the voter identification generic somehow???
         - may be IP address/fingerprint/both/nothing
+
+## Configuration
+Configure the databases in `Rocket.toml`; an example is provided (TODO: link here).
 
 ## Voting algorithms
 Use [`tallystick`](https://crates.io/crate/tallystick) to get the Schulze method etc.
