@@ -1,10 +1,10 @@
 # bettervote
 ## API
 Bettervote exposes a RESTful API:
-- `POST /api/<pollid>/vote` with candidate choices to vote
+- `POST /poll/<pollid>/vote` with candidate choices to vote
     - Provided data should be JSON of the form `{"choices":[]}`, where the `choices` key is an array of candidate strings
     - Response will be `{"success": true}` or equivalent JSON if the vote succeeds, and `{"success": false, "error": <errorstring>}` or equivalent if it fails (where `<errorstring>` is a string explaining the error that occured)
-- `GET /api/poll/<pollid>` to get info about a poll
+- `GET /poll/<pollid>` to get info about a poll
     - In the event of an error, the response will be JSON of the form `{"success": false, "error": <errorstring>}`, where `<errorstring>` is a human-readable string describing the error that occurred.
     - On success, the response will be JSON with the following properties:
         - `success` (boolean): `true`.
@@ -14,17 +14,18 @@ Bettervote exposes a RESTful API:
         - `endingTime` (integer): UNIX timestamp at which the poll ends (in seconds).
         - `numWinners` (integer): number of winners the poll has.
         - `protection` (string or null): `"ip"` if votes by the same IP address are forbidden, and `null` otherwise.
+        - `numVotes` (integer): the number of votes cast so far.
         - `ended` (boolean): `true` if the poll has ended, otherwise `false`.
     - If the poll has ended, the following additional properties will be specified in the response JSON:
         - `winners` (array of strings): the winner(s) of the poll.
-- `POST /api/create` to create a poll
+- `POST /create` to create a poll
     - Provided data should be JSON, with the following **mandatory** properties:
         - `name` (string): the name for the poll.
-        - `candidates` (array of strings): choices for which users can vote.
+        - `candidates` (array of strings): choices for which users can vote. Should be between 2 and 1024 in length.
         - `duration` (integer): the amount of time after which the poll will expire, in seconds. Must be positive.
         - `numWinners` (integer): the number of winners that the poll can have. Must be greater than 0 and less than the number of candidates provided.
     - The following properties are **optional**:
-        - `id` (string): a custom URL for the poll. Must be a string with at least 1 and at most 32 characters.
+        - `id` (string): a custom URL for the poll. Must be a string composed of letters A-Z (upper or lowercase), numbers 0-9, `_`, `.` and `-`, with at least 1 and at most 32 characters.
         - `protection` (string): the protection method to use to prevent double voting. Currently, the only acceptable values are `ip` (prevents multiple votes from the same IP address) and `none` (allows all incoming votes). In the future, more protection methods may be implemented.
     - Response on success is JSON of the form `{"success": true, "id": <id>}`, where `<id>` is the poll's ID. On error, the response will be JSON of the form `{"success": false, "error": <errorstring>}`, where `<errorstring>` is a human-readable string describing the error that occurred.
 
