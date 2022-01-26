@@ -44,6 +44,7 @@ impl Poll {
         candidates: Vec<String>,
         length: Duration,
         num_winners: usize,
+        prohibit_double_vote_by_ip: bool,
     ) -> Self {
         let id = id.unwrap_or_else(|| format!("{:16x}", rand::random::<u64>()));
         let creation_time = SystemTime::now();
@@ -63,7 +64,7 @@ impl Poll {
             num_winners,
             winners: None,
             method: VotingMethod::Schulze,
-            prohibit_double_vote_by_ip: true,
+            prohibit_double_vote_by_ip,
         }
     }
 
@@ -103,8 +104,8 @@ mod tests {
 
     #[test]
     fn autogen_random_id() {
-        let poll1 = Poll::new(None, "".to_string(), vec![], Duration::from_secs(1), 1);
-        let poll2 = Poll::new(None, "".to_string(), vec![], Duration::from_secs(1), 1);
+        let poll1 = Poll::new(None, "".to_string(), vec![], Duration::from_secs(1), 1, false);
+        let poll2 = Poll::new(None, "".to_string(), vec![], Duration::from_secs(1), 1, false);
 
         // Has a 1/(2^64 - 1) chance of failing when there is no bug.
         // This is effectively negligible.
@@ -120,6 +121,7 @@ mod tests {
             vec![],
             Duration::from_secs(1),
             1,
+            false,
         );
 
         assert_eq!(poll.id, id);
@@ -137,6 +139,7 @@ mod tests {
             vec![a.clone(), b.clone(), c.clone()],
             Duration::from_secs(1),
             1,
+            false
         );
         poll.votes.push(RankedChoiceVote {
             ranked_choices: vec![c.clone(), a.clone(), b.clone()],
