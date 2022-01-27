@@ -183,7 +183,11 @@ async fn create<'a>(mut conn: PostgresConnection, data: Json<CreateAPIRequestDat
         None => false,
     };
 
-    let poll = Poll::new(id, request.name, request.candidates, duration, num_winners, protection);
+    let poll = match Poll::new(id, request.name, request.candidates, duration, num_winners, protection) {
+        Ok(poll) => poll,
+        Err(e) => return handle_error(e),
+    };
+
     let id = poll.id.clone();
     match conn.add_poll(poll).await {
         Ok(_) => json!({ "success": true, "id": id }),
@@ -192,8 +196,54 @@ async fn create<'a>(mut conn: PostgresConnection, data: Json<CreateAPIRequestDat
 }
 
 #[get("/poll/<pollid>")]
-fn poll_info(pollid: String) -> Value {
-    todo!();
+async fn poll_info(mut conn: PostgresConnection, pollid: String) -> Value {
+    let poll = match conn.get_poll_by_id(pollid.clone()).await {
+        Ok(Some(poll)) => poll,
+        Ok(None) => {
+            return json!({
+                "error": format!("No poll was found with the ID '{}'.", pollid),
+                "success": false,
+            })
+        }
+        Err(e) => return handle_error(e),
+    };
+
+    let mut result = json!({
+        "success": true,
+        "name": poll.title,
+        "candidates": poll.candidates,
+        "creationTime": poll.creation_time,
+        "endingTime": poll.end_time,
+        "numWinners": poll.num_winners,
+        "protection": if poll.prohibit_double_vote_by_ip { json!("ip") } else { Value::Null },
+        "numVotes": poll.votes.len(),
+    });
+
+    if let Some(mut winners) = poll.winners {
+        result["ended"] = Value::Bool(true);
+        // Sort in reverse order - lowest ranks first
+        winners.sort_by(|a, b| b.rank.cmp(&a.rank));
+        let mut winners_unranked = vec![];
+        let mut cur_rank = 0;
+        while let Some(winner) = winners.pop() {
+            if winner.rank != cur_rank {
+                if winners_unranked.len() < poll.num_winners {
+                    // take the next rank
+                    cur_rank += 1;
+                } else {
+                    // We have enough winners!
+                    break;
+                }
+            }
+            dbg!(&winner);
+            winners_unranked.push(winner.candidate);
+        }
+        result["winners"] = json!(winners_unranked);
+    } else {
+        result["ended"] = Value::Bool(false);
+    }
+
+    result
 }
 
 #[cfg(test)]
@@ -236,7 +286,9 @@ mod tests {
     // TODO: test errors/bad input
 
     fn post(client: &Client, path: &str, data: Value) {
-        let req = client.post(path).json(&data).dispatch();
+        let mut req = client.post(path);
+        req.set_remote(localhost_ip!());
+        let req = req.json(&data).dispatch();
         assert_eq!(req.status(), Status::Ok);
 
         let json = req.into_json::<Value>().unwrap();
@@ -699,7 +751,7 @@ mod tests {
             "/create",
             json!({
                 "name": "Poll Info Test - Ongoing Happy Path",
-                "candidates": ["A", "B"],
+                "candidates": ["A", "B", "C"],
                 "duration": 10000i32,
                 "numWinners": 1i32,
                 "id": "ongoing_happy",
@@ -720,13 +772,13 @@ mod tests {
             .iter()
             .map(|c| c.as_str().unwrap())
             .collect();
-        assert_eq!(candidates_ongoing, vec!["A", "B"]);
+        assert_eq!(candidates_ongoing, vec!["A", "B", "C"]);
         assert_eq!(
             response_info_ongoing_json["endingTime"].as_u64().unwrap()
                 - response_info_ongoing_json["creationTime"].as_u64().unwrap(),
             10000
         );
-        assert_eq!(response_info_ongoing_json["numWinners"], 2i32);
+        assert_eq!(response_info_ongoing_json["numWinners"], 1i32);
         assert_eq!(response_info_ongoing_json["numVotes"], 0i32);
         assert_eq!(response_info_ongoing_json["protection"], Value::Null);
         assert_eq!(response_info_ongoing_json["ended"], false);
@@ -737,7 +789,7 @@ mod tests {
             "/create",
             json!({
                 "name": "Poll Info Test - Ended Happy Path",
-                "candidates": ["A", "B"],
+                "candidates": ["A", "B", "C"],
                 "duration": 2i32,
                 "numWinners": 1i32,
                 "id": "ended_happy",
@@ -747,10 +799,10 @@ mod tests {
             &client,
             "/poll/ended_happy/vote",
             json!({
-                "candidates": ["A"],
+                "choices": ["A"],
             }),
         );
-        std::thread::sleep(std::time::Duration::from_secs(2));
+        std::thread::sleep(std::time::Duration::from_secs(3));
 
         // poll should be over now
         let response_info_ended = client.get("/poll/ended_happy").dispatch();
@@ -759,7 +811,7 @@ mod tests {
         assert_eq!(response_info_ended_json["success"], true);
         assert_eq!(
             response_info_ended_json["name"],
-            "Poll Info Test - Ongoing Happy Path"
+            "Poll Info Test - Ended Happy Path"
         );
         let candidates_ended: Vec<&str> = response_info_ended_json["candidates"]
             .as_array()
@@ -767,16 +819,17 @@ mod tests {
             .iter()
             .map(|c| c.as_str().unwrap())
             .collect();
-        assert_eq!(candidates_ended, vec!["A", "B"]);
+        assert_eq!(candidates_ended, vec!["A", "B", "C"]);
         assert_eq!(
             response_info_ended_json["endingTime"].as_u64().unwrap()
                 - response_info_ended_json["creationTime"].as_u64().unwrap(),
-            10000
+            2
         );
-        assert_eq!(response_info_ended_json["numWinners"], 2i32);
+        assert_eq!(response_info_ended_json["numWinners"], 1i32);
         assert_eq!(response_info_ended_json["protection"], Value::Null);
-        assert_eq!(response_info_ended_json["numVotes"], 2i32);
+        assert_eq!(response_info_ended_json["numVotes"], 1i32);
         assert_eq!(response_info_ended_json["ended"], true);
+        dbg!(&response_info_ended_json);
         let winners_ended: Vec<&str> = response_info_ended_json["winners"]
             .as_array()
             .unwrap()
@@ -796,9 +849,6 @@ mod tests {
         assert_eq!(response_nonexistent.status(), Status::Ok);
         let response_nonexistent_json = response_nonexistent.into_json::<Value>().unwrap();
         assert_eq!(response_nonexistent_json["success"], false);
-        assert_eq!(
-            response_nonexistent_json["nonexistent"],
-            "TODO: Figure out to check for existence"
-        );
+        assert_eq!(response_nonexistent_json["name"], json!(null));
     }
 }

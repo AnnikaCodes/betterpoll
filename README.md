@@ -17,7 +17,7 @@ Bettervote exposes a RESTful API:
         - `numVotes` (integer): the number of votes cast so far.
         - `ended` (boolean): `true` if the poll has ended, otherwise `false`.
     - If the poll has ended, the following additional properties will be specified in the response JSON:
-        - `winners` (array of strings): the winner(s) of the poll.
+        - `winners` (array of strings): the winner(s) of the poll. May be more/less than `numWinners` if multiple winners have the same rank in the overall tally.
 - `POST /create` to create a poll
     - Provided data should be JSON, with the following **mandatory** properties:
         - `name` (string): the name for the poll.

@@ -9,7 +9,7 @@ use tallystick::schulze::SchulzeTally;
 use tallystick::schulze::Variant;
 use tallystick::RankedCandidate;
 
-use crate::error::ErrorKind;
+use crate::error::{ErrorKind, InternalError};
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct RankedChoiceVote {
@@ -28,8 +28,10 @@ pub struct Poll {
     pub id: String,
     pub title: String,
     pub candidates: Vec<String>,
-    pub creation_time: SystemTime,
-    pub end_time: SystemTime,
+    /// Seconds since the Epoch
+    pub creation_time: u64,
+    /// Seconds since the Epoch
+    pub end_time: u64,
     pub votes: Vec<RankedChoiceVote>,
     pub num_winners: usize,
     pub winners: Option<Vec<RankedCandidate<String>>>,
@@ -45,16 +47,12 @@ impl Poll {
         length: Duration,
         num_winners: usize,
         prohibit_double_vote_by_ip: bool,
-    ) -> Self {
+    ) -> Result<Self, ErrorKind> {
         let id = id.unwrap_or_else(|| format!("{:16x}", rand::random::<u64>()));
-        let creation_time = SystemTime::now();
-        let end_time = creation_time.checked_add(length).unwrap_or_else(|| {
-            eprintln!("WARNING: Duration for the poll with ID '{}' is too long! ({} seconds)", &id, length.as_secs());
-            eprintln!("This should have been caught already - defaulting to the current time (poll ends immediately)");
-            creation_time
-        });
+        let creation_time = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).expect("could not get system time").as_secs();
+        let end_time = creation_time + length.as_secs();
 
-        Self {
+        Ok(Self {
             id,
             title,
             candidates,
@@ -65,7 +63,7 @@ impl Poll {
             winners: None,
             method: VotingMethod::Schulze,
             prohibit_double_vote_by_ip,
-        }
+        })
     }
 
     /// Finds the winners
@@ -109,7 +107,7 @@ mod tests {
 
         // Has a 1/(2^64 - 1) chance of failing when there is no bug.
         // This is effectively negligible.
-        assert_ne!(poll1.id, poll2.id);
+        assert_ne!(poll1.unwrap().id, poll2.unwrap().id);
     }
 
     #[test]
@@ -122,7 +120,7 @@ mod tests {
             Duration::from_secs(1),
             1,
             false,
-        );
+        ).unwrap();
 
         assert_eq!(poll.id, id);
     }
@@ -140,7 +138,7 @@ mod tests {
             Duration::from_secs(1),
             1,
             false
-        );
+        ).unwrap();
         poll.votes.push(RankedChoiceVote {
             ranked_choices: vec![c.clone(), a.clone(), b.clone()],
             voter_ip: "127.0.0.1".parse().unwrap(),
