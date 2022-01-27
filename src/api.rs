@@ -3,17 +3,16 @@
 use std::net::IpAddr;
 
 use rocket::serde::json::{json, Json, Value};
-use rocket::serde::{Deserialize, Serialize};
+use rocket::serde::{Deserialize};
 
 use crate::database::postgres::PostgresConnection;
 use crate::error::ErrorKind;
-use crate::poll::{RankedChoiceVote, Poll};
+use crate::poll::{Poll, RankedChoiceVote};
 
 /// Returns all the routes that should be made available
 pub fn routes() -> Vec<rocket::Route> {
     routes![vote, create, poll_info]
 }
-
 
 fn handle_error(e: ErrorKind) -> Value {
     match e {
@@ -74,19 +73,19 @@ async fn vote(
     }
 }
 
-
 #[derive(Deserialize)]
 struct CreateAPIRequestData<'a> {
     pub name: String,
     pub candidates: Vec<String>,
     pub duration: i64,
-    pub numWinners: i64,
+    #[serde(rename = "numWinners")]
+    pub num_winners: i64,
     pub id: Option<&'a str>,
     pub protection: Option<&'a str>,
 }
 
 #[post("/create", data = "<data>")]
-async fn create<'a>(mut conn: PostgresConnection, data: Json<CreateAPIRequestData<'a>>) -> Value {
+async fn create(mut conn: PostgresConnection, data: Json<CreateAPIRequestData<'_>>) -> Value {
     let Json(request) = data;
 
     // Validate candidates
@@ -121,37 +120,40 @@ async fn create<'a>(mut conn: PostgresConnection, data: Json<CreateAPIRequestDat
     let duration = std::time::Duration::from_secs(request.duration as u64);
 
     // Validate numWinners
-    if request.numWinners <= 0 {
+    if request.num_winners <= 0 {
         return json!({
             "error": "The number of winners must be a positive, nonzero number.",
             "success": false,
         });
     }
-    if request.numWinners >= request.candidates.len() as i64 {
+    if request.num_winners >= request.candidates.len() as i64 {
         return json!({
             "error": "The number of winners must be less than to the number of candidates.",
             "success": false,
         });
     }
-    let num_winners: usize = match request.numWinners.try_into() {
+    let num_winners: usize = match request.num_winners.try_into() {
         Ok(n) => n,
         Err(e) => {
             eprintln!("An error occured: {:?}", e);
             eprintln!("{:?}", backtrace::Backtrace::new());
-            return json!({ "error": "Sorry, an internal server error occured. The server's administrators have been notified.", "success": false })
+            return json!({ "error": "Sorry, an internal server error occured. The server's administrators have been notified.", "success": false });
         }
     };
 
     // validate ID
     let id = match request.id {
         Some(id) => {
-            if id.len() < 1 || id.len() > 32 {
+            if id.is_empty() || id.len() > 32 {
                 return json!({
                     "error": "The ID must be between 1 and 32 characters.",
                     "success": false,
                 });
             }
-            if id.chars().any(|c| !c.is_ascii_alphanumeric() && c != '_' && c != '.' && c != '-') {
+            if id
+                .chars()
+                .any(|c| !c.is_ascii_alphanumeric() && c != '_' && c != '.' && c != '-')
+            {
                 return json!({
                     "error": "The ID must only contain ASCII alphanumeric characters, '-', '.', and '-'.",
                     "success": false,
@@ -159,16 +161,18 @@ async fn create<'a>(mut conn: PostgresConnection, data: Json<CreateAPIRequestDat
             }
 
             match conn.get_poll_by_id(id.to_string()).await {
-                Ok(Some(poll)) => return json!({
-                    "error": format!("A poll already exists with the ID '{}'.", id),
-                    "success": false,
-                }),
-                Ok(None) => {},
+                Ok(Some(_poll)) => {
+                    return json!({
+                        "error": format!("A poll already exists with the ID '{}'.", id),
+                        "success": false,
+                    })
+                }
+                Ok(None) => {}
                 Err(e) => return handle_error(e),
             };
 
             Some(id.to_string())
-        },
+        }
         None => None,
     };
 
@@ -176,14 +180,23 @@ async fn create<'a>(mut conn: PostgresConnection, data: Json<CreateAPIRequestDat
     let protection = match request.protection {
         Some("ip") => true,
         Some("none") => false,
-        Some(_) => return json!({
-            "error": "The protection must be either 'ip' or 'none'.",
-            "success": false,
-        }),
+        Some(_) => {
+            return json!({
+                "error": "The protection must be either 'ip' or 'none'.",
+                "success": false,
+            })
+        }
         None => false,
     };
 
-    let poll = match Poll::new(id, request.name, request.candidates, duration, num_winners, protection) {
+    let poll = match Poll::new(
+        id,
+        request.name,
+        request.candidates,
+        duration,
+        num_winners,
+        protection,
+    ) {
         Ok(poll) => poll,
         Err(e) => return handle_error(e),
     };
@@ -251,12 +264,12 @@ mod tests {
     use std::net::ToSocketAddrs;
 
     use postgres::NoTls;
-    use rocket::figment::Provider;
+
     use rocket::http::Status;
     use rocket::local::blocking::Client;
-    use rocket::serde::json::{json, Json, Value};
+    use rocket::serde::json::{json, Value};
 
-    use crate::database::postgres::PostgresConnection;
+
     use serial_test::serial;
 
     fn create_client() -> Client {
@@ -264,14 +277,15 @@ mod tests {
     }
 
     macro_rules! localhost_ip {
-       () => {
-           "127.0.0.1:49124".to_socket_addrs().unwrap().next().unwrap()
-        }
+        () => {
+            "127.0.0.1:49124".to_socket_addrs().unwrap().next().unwrap()
+        };
     }
 
     /// Clears the database (so that unit tests don't interfere with each other)
     fn clear_db(client: &Client) {
-        let db_url = client.rocket()
+        let db_url = client
+            .rocket()
             .figment()
             .find_value("databases.test_db.url")
             .expect("No 'test_db' configured in Rocket.toml");
@@ -590,10 +604,7 @@ mod tests {
                 "numWinners": 1i32,
             }),
         ] {
-            let response = client
-                .post("/create")
-                .json(&bad_json)
-                .dispatch();
+            let response = client.post("/create").json(&bad_json).dispatch();
             assert_eq!(response.status(), Status::UnprocessableEntity);
         }
     }
@@ -613,9 +624,8 @@ mod tests {
                 "duration": 100000i32,
                 "numWinners": 1i32,
                 "id": "create_already_exists",
-            })
+            }),
         );
-
 
         let response = client
             .post("/create")
@@ -700,7 +710,15 @@ mod tests {
         let client = create_client();
         clear_db(&client);
 
-        for bad_id in ["", " ", "a b", "a b c", "morethan32charactersaaaaaaaaaaaaa", "&a&&", "a??b"] {
+        for bad_id in [
+            "",
+            " ",
+            "a b",
+            "a b c",
+            "morethan32charactersaaaaaaaaaaaaa",
+            "&a&&",
+            "a??b",
+        ] {
             let response = client
                 .post("/create")
                 .json(&json!({
@@ -737,7 +755,6 @@ mod tests {
         assert_eq!(json["success"], false);
         assert!(!json["error"].as_str().unwrap().is_empty());
     }
-
 
     #[test]
     #[serial]

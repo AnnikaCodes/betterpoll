@@ -2,12 +2,12 @@
 //!
 //! TODO: can we prepare statements? investigate how this'd work with Rocket
 
-use std::time::{SystemTime, Duration};
+use std::time::{Duration, SystemTime};
 
 use tallystick::RankedCandidate;
 
 use crate::{
-    error::{ErrorKind, InternalError, VisibleError},
+    error::{ErrorKind, InternalError},
     poll::*,
 };
 
@@ -96,13 +96,21 @@ impl PostgresConnection {
         let creation_systime: SystemTime = poll_row.try_get("created_at")?;
         let creation_time = match creation_systime.duration_since(SystemTime::UNIX_EPOCH) {
             Ok(duration) => duration.as_secs(),
-            Err(e) => return Err(ErrorKind::Internal(InternalError::CouldNotConvertDBTimeToUNIX(e, id))),
+            Err(e) => {
+                return Err(ErrorKind::Internal(
+                    InternalError::CouldNotConvertDBTimeToUNIX(e, id),
+                ))
+            }
         };
 
         let end_systime: SystemTime = poll_row.try_get("expires_at")?;
         let end_time = match end_systime.duration_since(SystemTime::UNIX_EPOCH) {
             Ok(duration) => duration.as_secs(),
-            Err(e) => return Err(ErrorKind::Internal(InternalError::CouldNotConvertDBTimeToUNIX(e, id))),
+            Err(e) => {
+                return Err(ErrorKind::Internal(
+                    InternalError::CouldNotConvertDBTimeToUNIX(e, id),
+                ))
+            }
         };
 
         let mut poll = Poll {
@@ -117,7 +125,12 @@ impl PostgresConnection {
             votes,
             method,
         };
-        if poll.end_time < std::time::SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).expect("can't find out how long it was since the UNIX epoch").as_secs() {
+        if poll.end_time
+            < std::time::SystemTime::now()
+                .duration_since(SystemTime::UNIX_EPOCH)
+                .expect("can't find out how long it was since the UNIX epoch")
+                .as_secs()
+        {
             poll.finish()?;
         }
 
@@ -130,19 +143,27 @@ impl PostgresConnection {
         };
         let id = poll.id.clone();
 
-        let creation_time = match std::time::SystemTime::UNIX_EPOCH.checked_add(Duration::from_secs(poll.creation_time)) {
+        let creation_time = match std::time::SystemTime::UNIX_EPOCH
+            .checked_add(Duration::from_secs(poll.creation_time))
+        {
             Some(creation_time) => creation_time,
-            None => return Err(ErrorKind::Internal(InternalError::InvalidCreationTime(
-                poll.id,
-                poll.creation_time,
-            ))),
+            None => {
+                return Err(ErrorKind::Internal(InternalError::InvalidCreationTime(
+                    poll.id,
+                    poll.creation_time,
+                )))
+            }
         };
-        let end_time = match std::time::SystemTime::UNIX_EPOCH.checked_add(Duration::from_secs(poll.end_time)) {
+        let end_time = match std::time::SystemTime::UNIX_EPOCH
+            .checked_add(Duration::from_secs(poll.end_time))
+        {
             Some(end_time) => end_time,
-            None => return Err(ErrorKind::Internal(InternalError::InvalidEndTime(
-                poll.id,
-                poll.end_time,
-            ))),
+            None => {
+                return Err(ErrorKind::Internal(InternalError::InvalidEndTime(
+                    poll.id,
+                    poll.end_time,
+                )))
+            }
         };
 
         self.run(move |c| {

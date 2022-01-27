@@ -1,10 +1,10 @@
 // Generic database code
 pub mod postgres;
 
-use tallystick::RankedCandidate;
 
-use crate::error::ErrorKind;
-use crate::poll::{Poll, RankedChoiceVote};
+
+
+
 
 // Generic database trait; an implementation be used with Rocket for fun stuff
 //

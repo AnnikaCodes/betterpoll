@@ -9,7 +9,7 @@ use tallystick::schulze::SchulzeTally;
 use tallystick::schulze::Variant;
 use tallystick::RankedCandidate;
 
-use crate::error::{ErrorKind, InternalError};
+use crate::error::{ErrorKind};
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct RankedChoiceVote {
@@ -49,7 +49,10 @@ impl Poll {
         prohibit_double_vote_by_ip: bool,
     ) -> Result<Self, ErrorKind> {
         let id = id.unwrap_or_else(|| format!("{:16x}", rand::random::<u64>()));
-        let creation_time = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).expect("could not get system time").as_secs();
+        let creation_time = SystemTime::now()
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .expect("could not get system time")
+            .as_secs();
         let end_time = creation_time + length.as_secs();
 
         Ok(Self {
@@ -96,14 +99,28 @@ impl Poll {
 
 #[cfg(test)]
 mod tests {
-    use std::borrow::Cow;
+    
 
     use super::*;
 
     #[test]
     fn autogen_random_id() {
-        let poll1 = Poll::new(None, "".to_string(), vec![], Duration::from_secs(1), 1, false);
-        let poll2 = Poll::new(None, "".to_string(), vec![], Duration::from_secs(1), 1, false);
+        let poll1 = Poll::new(
+            None,
+            "".to_string(),
+            vec![],
+            Duration::from_secs(1),
+            1,
+            false,
+        );
+        let poll2 = Poll::new(
+            None,
+            "".to_string(),
+            vec![],
+            Duration::from_secs(1),
+            1,
+            false,
+        );
 
         // Has a 1/(2^64 - 1) chance of failing when there is no bug.
         // This is effectively negligible.
@@ -120,7 +137,8 @@ mod tests {
             Duration::from_secs(1),
             1,
             false,
-        ).unwrap();
+        )
+        .unwrap();
 
         assert_eq!(poll.id, id);
     }
@@ -137,8 +155,9 @@ mod tests {
             vec![a.clone(), b.clone(), c.clone()],
             Duration::from_secs(1),
             1,
-            false
-        ).unwrap();
+            false,
+        )
+        .unwrap();
         poll.votes.push(RankedChoiceVote {
             ranked_choices: vec![c.clone(), a.clone(), b.clone()],
             voter_ip: "127.0.0.1".parse().unwrap(),
@@ -148,7 +167,7 @@ mod tests {
             voter_ip: "127.0.0.2".parse().unwrap(),
         });
         poll.votes.push(RankedChoiceVote {
-            ranked_choices: vec![a.clone(), c.clone()],
+            ranked_choices: vec![a, c.clone()],
             voter_ip: "127.0.0.3".parse().unwrap(),
         });
         poll.votes.push(RankedChoiceVote {
@@ -156,7 +175,7 @@ mod tests {
             voter_ip: "127.0.0.3".parse().unwrap(),
         });
         poll.votes.push(RankedChoiceVote {
-            ranked_choices: vec![b.clone(), c.clone()],
+            ranked_choices: vec![b, c.clone()],
             voter_ip: "127.0.0.3".parse().unwrap(),
         });
 

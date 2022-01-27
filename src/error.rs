@@ -39,7 +39,6 @@ pub enum InternalError {
     InvalidNumWinners(i32, TryFromIntError),
     InvalidWinnerRank(i32, TryFromIntError),
     TallyStick(tallystick::TallyError),
-    CouldNotConvertSystemTimeToUNIX(std::time::SystemTime, std::time::SystemTimeError),
     CouldNotConvertDBTimeToUNIX(std::time::SystemTimeError, String),
     InvalidCreationTime(String, u64),
     InvalidEndTime(String, u64),
