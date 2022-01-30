@@ -1,26 +1,5 @@
-[package]
-name = "bettervote"
-version = "0.1.0"
-edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
-dotenv = "0.15.0"
-postgres = "0.19.2"
-rand = "0.8.4"
-rocket = { version = "0.5.0-rc.1", features = ["json"] }
-serde = "1.0.132"
-tallystick = "0.4.3"
-backtrace = "0.3.63"
-
-[dependencies.rocket_sync_db_pools]
-version = "0.1.0-rc.1"
-default-features = false
-features = ["postgres_pool"]
-
-[features]
-db-test = []
-
-[dev-dependencies]
-serial_test = "0.5.1"
+[workspace]
+members = [
+    "backend_lib",
+    "server_binary",
+]

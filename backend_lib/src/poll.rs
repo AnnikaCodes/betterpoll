@@ -48,7 +48,7 @@ impl Poll {
         num_winners: usize,
         prohibit_double_vote_by_ip: bool,
     ) -> Result<Self, ErrorKind> {
-        let id = id.unwrap_or_else(|| format!("{:16x}", rand::random::<u64>()));
+        let id = id.unwrap_or_else(|| format!("{:016x}", rand::random::<u64>()));
         let creation_time = SystemTime::now()
             .duration_since(SystemTime::UNIX_EPOCH)
             .expect("could not get system time")
@@ -99,7 +99,7 @@ impl Poll {
 
 #[cfg(test)]
 mod tests {
-    
+
 
     use super::*;
 

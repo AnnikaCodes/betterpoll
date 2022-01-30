@@ -1,4 +1,6 @@
 # bettervote
+The main logic is in `bv_backend/` so that it can be effectively fuzz tested.
+
 ## API
 Bettervote exposes a RESTful API:
 - `POST /poll/<pollid>/vote` with candidate choices to vote

@@ -42,6 +42,9 @@ name = "arbitrary"
 version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "510c76ecefdceada737ea728f4f9a84bd2e1ef29f1ba555e560940fe279954de"
+dependencies = [
+ "derive_arbitrary",
+]
 
 [[package]]
 name = "async-stream"
@@ -113,8 +116,17 @@ dependencies = [
  "rocket",
  "rocket_sync_db_pools",
  "serde",
- "serial_test",
  "tallystick",
+]
+
+[[package]]
+name = "backend_lib-fuzz"
+version = "0.0.0"
+dependencies = [
+ "arbitrary",
+ "backend_lib",
+ "libfuzzer-sys",
+ "rocket",
 ]
 
 [[package]]
@@ -234,6 +246,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "683d6b536309245c849479fba3da410962a43ed8e51c26b729208ec0ac2798d0"
 dependencies = [
  "generic-array",
+]
+
+[[package]]
+name = "derive_arbitrary"
+version = "1.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b24629208e87a2d8b396ff43b15c4afb0a69cea3fbbaa9ed9b92b7c02f0aed73"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
@@ -672,6 +695,17 @@ name = "libc"
 version = "0.2.116"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "565dbd88872dbe4cc8a46e527f26483c1d1f7afa6b884a3bd6cd893d4f98da74"
+
+[[package]]
+name = "libfuzzer-sys"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "36a9a84a6e8b55dfefb04235e55edb2b9a2a18488fcae777a6bdaa6f06f1deb3"
+dependencies = [
+ "arbitrary",
+ "cc",
+ "once_cell",
+]
 
 [[package]]
 name = "lock_api"
@@ -1355,36 +1389,6 @@ dependencies = [
  "itoa 1.0.1",
  "ryu",
  "serde",
-]
-
-[[package]]
-name = "serial_test"
-version = "0.5.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e0bccbcf40c8938196944a3da0e133e031a33f4d6b72db3bda3cc556e361905d"
-dependencies = [
- "lazy_static",
- "parking_lot",
- "serial_test_derive",
-]
-
-[[package]]
-name = "serial_test_derive"
-version = "0.5.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b2acd6defeddb41eb60bb468f8825d0cfd0c2a76bc03bfd235b6a1dc4f6a1ad5"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
-name = "server_binary"
-version = "0.1.0"
-dependencies = [
- "backend_lib",
- "rocket",
 ]
 
 [[package]]

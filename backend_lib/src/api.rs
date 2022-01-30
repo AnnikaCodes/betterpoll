@@ -49,6 +49,7 @@ async fn vote(
         voter_ip,
     };
 
+
     let poll = match conn.get_poll_by_id(pollid.clone()).await {
         Ok(Some(poll)) => poll,
         Ok(None) => {
@@ -59,6 +60,22 @@ async fn vote(
         }
         Err(e) => return handle_error(e),
     };
+
+    if vote.ranked_choices.len() < 1 || vote.ranked_choices.len() > poll.candidates.len() {
+        return json!({
+            "error": format!("You must vote for between 1 and {} candidates", poll.candidates.len()),
+            "success": false,
+        });
+    }
+
+    for choice in &vote.ranked_choices {
+        if !poll.candidates.contains(choice) {
+            return json!({
+                "error": format!("The choice '{}' is not a valid choice.", choice),
+                "success": false,
+            });
+        }
+    }
 
     if poll.prohibit_double_vote_by_ip && poll.votes.iter().any(|v| v.voter_ip == vote.voter_ip) {
         return json!({
@@ -74,7 +91,8 @@ async fn vote(
 }
 
 #[derive(Deserialize)]
-struct CreateAPIRequestData<'a> {
+#[cfg_attr(fuzzing, derive(arbitrary::Arbitrary, rocket::serde::Serialize, Debug))]
+pub struct CreateAPIRequestData<'a> {
     pub name: String,
     pub candidates: Vec<String>,
     pub duration: i64,

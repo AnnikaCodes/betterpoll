@@ -11,8 +11,9 @@ use crate::{
     poll::*,
 };
 
-#[cfg_attr(not(test), database("production_db"))]
 #[cfg_attr(test, database("test_db"))]
+#[cfg_attr(fuzzing, database("test_db"))]
+#[cfg_attr(not(any(test, fuzzing)), database("production_db"))]
 pub struct PostgresConnection(pub postgres::Client);
 
 impl PostgresConnection {
