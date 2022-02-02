@@ -133,6 +133,7 @@ impl PostgresConnection {
                 .as_secs()
         {
             poll.finish()?;
+            self.set_poll_winners(poll.id.clone(), poll.winners.clone().unwrap()).await?;
         }
 
         Ok(Some(poll))
