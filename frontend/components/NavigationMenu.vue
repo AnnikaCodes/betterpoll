@@ -1,4 +1,5 @@
 <template>
+    <!-- TODO: make this work on mobile, maybe with a Buefy thing -->
     <nav class="navbar" role="navigation" aria-label="main navigation">
         <div class="navbar-brand">
             <nuxt-link class="navbar-item" to="/">
@@ -24,11 +25,7 @@
             <div class="navbar-end">
                 <div class="navbar-item">
                     <div class="buttons">
-                        <nuxt-link class="button is-primary" to="/new">
-                            <b-icon icon="ballot"></b-icon>
-                            <strong>Create a poll</strong>
-                        </nuxt-link>
-
+                        <PollCreateButton />
                         <a class="button is-light" href="https://github.com/AnnikaCodes/bettervote">
                             <b-icon icon="github"></b-icon>
                             <strong>GitHub</strong>
