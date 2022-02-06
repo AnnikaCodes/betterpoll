@@ -1,12 +1,18 @@
 <template>
     <main>
         <NavigationMenu />
-        <section class="section">
-            <h1 class="title">About BetterVote</h1>
+        <section class="hero is-info">
+            <div class="hero-body">
+                <h1 class="title">About BetterVote</h1>
 
-            <p>
-                Just a paragraph lole.
-            </p>
+                <p>
+                    BetterVote is an app that lets you make quick, easy, working ranked-choice polls.
+                    It was created by <a href="https://github.com/AnnikaCodes" class="has-text-black">Annika</a>.
+                </p>
+
+                <br />
+                More stuff should go here at some point.
+            </div>
         </section>
     </main>
 </template>
