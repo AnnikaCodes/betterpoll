@@ -207,6 +207,14 @@ async fn create(mut conn: PostgresConnection, data: Json<CreateAPIRequestData<'_
         None => false,
     };
 
+    // Validate name
+    if request.name.len() > 1024 || request.name.len() <= 0 {
+        return json!({
+            "error": "The name must be between 1 and 1,024 characters.",
+            "success": false,
+        });
+    }
+
     let poll = match Poll::new(
         id,
         request.name,
