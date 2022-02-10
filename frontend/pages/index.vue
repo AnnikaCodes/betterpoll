@@ -3,7 +3,9 @@
     <NavigationMenu />
     <section class="hero is-info">
       <div class="hero-body">
-        <p class="title">Simple, easy ranked-choice voting</p>
+        <p class="title">
+Simple, easy ranked-choice voting
+</p>
 
         <p>
           BetterVote is a simple way to create and share ranked-choice polls.
@@ -15,7 +17,7 @@
           This is called <a href="https://en.wikipedia.org/wiki/First-past-the-post_voting#Tactical_voting" class="has-text-black">tactical voting</a>, and ranked-choice voting largely prevents this.
         </p>
 
-        <br />
+        <br>
         <p>
           BetterVote currently uses the <a href="https://en.wikipedia.org/wiki/Schulze_method" class="has-text-black">Schulze method</a> of ranked-choice voting, but other methods may be added in the future!
         </p>
@@ -31,4 +33,3 @@ export default Vue.extend({
   name: 'IndexPage'
 })
 </script>
-

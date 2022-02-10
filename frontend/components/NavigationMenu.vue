@@ -22,6 +22,10 @@
                 <nuxt-link class="navbar-item" to="/about">
                     About
                 </nuxt-link>
+
+                <nuxt-link class="navbar-item" to="/contact">
+                    Contact
+                </nuxt-link>
             </div>
 
             <div class="navbar-end">
