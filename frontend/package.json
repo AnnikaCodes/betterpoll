@@ -12,10 +12,10 @@
     "lintfix": "npm run lint:js -- --fix"
   },
   "dependencies": {
+    "@nuxtjs/axios": "^5.13.6",
     "core-js": "^3.19.3",
     "nuxt": "^2.15.8",
     "nuxt-buefy": "^0.4.14",
-    "postcss-custom-properties": "^12.1.4",
     "vue": "^2.6.14",
     "vue-server-renderer": "^2.6.14",
     "vue-template-compiler": "^2.6.14",
