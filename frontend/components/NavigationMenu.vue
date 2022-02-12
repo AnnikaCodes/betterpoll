@@ -5,6 +5,7 @@
         <CSSTemplate />
         <div class="navbar-brand">
             <nuxt-link class="navbar-item" to="/">
+                <!-- TODO: Add logo -->
                 <img src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.foundrygroup.com%2Fwp-content%2Fuploads%2F2018%2F02%2FPlaceholder-Logo.png&f=1&nofb=1" width="112" height="28">
             </nuxt-link>
         </div>

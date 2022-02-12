@@ -181,7 +181,7 @@ async fn create(mut conn: PostgresConnection, data: Json<CreateAPIRequestData<'_
             match conn.get_poll_by_id(id.to_string()).await {
                 Ok(Some(_poll)) => {
                     return json!({
-                        "error": format!("A poll already exists with the ID '{}'.", id),
+                        "error": format!("A poll already exists with the URL '{}'.", id),
                         "success": false,
                     })
                 }

@@ -4,9 +4,9 @@
     <section class="hero is-info">
       <div class="hero-body">
         <p class="title">
-Simple, easy ranked-choice voting
-</p>
-
+          Simple, easy ranked-choice voting
+        </p>
+        <!-- eslint-disable max-len -->
         <p>
           BetterVote is a simple way to create and share ranked-choice polls.
         </p>
@@ -21,6 +21,7 @@ Simple, easy ranked-choice voting
         <p>
           BetterVote currently uses the <a href="https://en.wikipedia.org/wiki/Schulze_method" class="has-text-black">Schulze method</a> of ranked-choice voting, but other methods may be added in the future!
         </p>
+        <!-- eslint-enable max-len -->
       </div>
     </section>
   </main>
@@ -30,6 +31,6 @@ Simple, easy ranked-choice voting
 import Vue from 'vue'
 
 export default Vue.extend({
-  name: 'IndexPage'
+  name: 'IndexPage',
 })
 </script>

@@ -1,25 +1,7 @@
 // Skapar ett nytt val!
 // Denna sida behöver samla in information från användaren och skicka det till API:n.
 // Jag vet inte hur man gör denna med Vue...
-/*
-    - Provided data should be JSON, with the following **mandatory** properties:
-        - `name` (string): the name for the poll.
-        - `candidates` (array of strings): choices for which users can vote. Should be between 2 and 1024 in length.
-        - `duration` (integer): the amount of time after which the poll will expire, in seconds. Must be positive.
-        - `numWinners` (integer): the number of winners that the poll can have. Must be greater than 0 and less than the number of candidates provided.
-    - The following properties are **optional**:
-        - `id` (string): a custom URL for the poll. Must be a string composed of letters A-Z (upper or lowercase), numbers 0-9, `_`, `.` and `-`, with at least 1 and at most 32 characters.
-        - `protection` (string): the protection method to use to prevent double voting. Currently, the only acceptable values are `ip` (prevents multiple votes from the same IP address) and `none` (allows all incoming votes). In the future, more protection methods may be implemented.
 
-    `protection` - checkbox
-    `id` - text, optional
-    `duration` - calculated by date/time picker
-    `numWinners` - number from dropdown, limited by candidates
-    `candidates` - list of text fields
-    `name` - text field
-*/
-
-// TODO: submit to the API
 // TODO: show polls (voting UI & results)
 <template>
     <main>
@@ -29,9 +11,21 @@
             <h1 class="title">
                 Create a new poll
             </h1>
-            <form @submit.prevent="makePoll(name, candidates.map(c => c.toString()), Math.floor((endTime - Date.now()) / 1000), numWinners, id, protection)">
-            <!-- Use an element here; programmatically setting a loading with $buefy is probably possible but poorly documented :( -->
-            <b-loading v-model="isLoading"/>
+            <form
+                @submit.prevent="makePoll(
+                    name,
+                    candidates.map(c => c.toString()),
+                    Math.floor((endTime - Date.now()) / 1000),
+                    numWinners,
+                    id,
+                    protection
+                )"
+            >
+            <!--
+                We use an element here because programmatically setting a loading with $buefy is
+                probably possible but poorly documented :(
+            -->
+            <b-loading v-model="isLoading" />
             <b-field label="Title">
                 <b-input
                     v-model="name"
@@ -84,7 +78,11 @@
 
             <!-- TODO: validate if the custom URL/ID is taken before submission -->
             <b-field label="Custom URL (optional)">
-              <p class="content">{{ domain }}/poll/</p><b-input
+                <p class="content">
+                    {{ domain }}/poll/
+                </p>
+
+                <b-input
                     v-model="id"
                     type="text"
                     validation-message="Must be between 2 and 32 characters"
@@ -96,9 +94,7 @@
             </b-field>
 
               <div class="control">
-                <button
-                    class="button is-link"
-                >
+                <button class="button is-link">
                     Create poll
                 </button>
               </div>
@@ -110,7 +106,6 @@
 <script lang="ts">
 import Vue from 'vue'
 import { BETTERVOTE_API_URL, DOMAIN } from '../constants'
-
 
 export default Vue.extend({
   name: 'IndexPage',
@@ -126,39 +121,60 @@ export default Vue.extend({
       id: null,
       domain: `${DOMAIN}`,
       isLoading: false,
-      name: ''
+      name: '',
     }
   },
   methods: {
-    async makePoll(name: string, candidates: string[], duration: number, numWinners: number, id: string | null, preventDoubleVoteByIP: boolean) {
-        this.isLoading = true
-        const json: {[k: string]: any} = {
-            name,
-            candidates,
-            duration,
-            numWinners,
-            protection: preventDoubleVoteByIP ? 'ip' : 'none'
-        }
-        if (id) json.id = id
+    async makePoll(
+        name: string,
+        candidates: string[],
+        duration: number,
+        numWinners: number,
+        id: string | null,
+        preventDoubleVoteByIP: boolean,
+    ) {
+      this.isLoading = true
+      const json: {[k: string]: any} = {
+        name,
+        candidates,
+        duration,
+        numWinners,
+        protection: preventDoubleVoteByIP ? 'ip' : 'none',
+      }
+      if (id) {
+        json.id = id
+      }
 
-        try {
-            const data = await this.$axios.$post(`${BETTERVOTE_API_URL}/create`, json)
-            if (!data.success) {
-                // TODO: handle error, with a modal/data.error
-            } else {
-                // Success!
-                console.log(data.id)
-                // TODO: make this work
-                // TODO: show a notification thing on the next page to inform the user that the poll was created?
-                this.$router.push(`/view/${data.id}`)
-            }
-
-        } catch (e) {
-            // TODO: modal
-            console.error(`An error occurred while POSTing to /create: ${e} ${JSON.stringify(e)}`)
-            this.isLoading = false
+      try {
+        const data = await this.$axios.$post(`${BETTERVOTE_API_URL}/create`, json)
+        if (!data.success) {
+          // TODO: handle error, with a modal/data.error
+          this.isLoading = false
+          this.$buefy.toast.open({
+            duration: 5000,
+            message: data.error || 'There was an error creating the poll',
+            type: 'is-danger',
+          })
+        } else {
+          // Success!
+          this.isLoading = false
+          this.$router.push(`/poll/${data.id}`)
+          this.$buefy.toast.open({
+            duration: 5000,
+            message: 'The poll was successfully created!',
+            type: 'is-success',
+          })
         }
-    }
+      } catch (e) {
+        this.isLoading = false
+        this.$buefy.toast.open({
+          duration: 5000,
+          message: 'An error occured contacting our servers; make sure you are connected to the Internet',
+          type: 'is-danger',
+        })
+        console.error(`An error occurred while POSTing to /create: ${e} ${JSON.stringify(e)}`)
+      }
+    },
   },
 })
 </script>
