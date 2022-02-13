@@ -8,31 +8,69 @@
               Poll: {{ name }}
           </h1>
 
-        <table class="table">
-          <thead>
-            <tr>
-              <th scope="col">Rank</th>
-              <th scope="col">Choice</th>
-              <th /> <!-- Removal button -->
-            </tr>
-          </thead>
-            <draggable v-model="candidates" group="people" @start="drag=true" @end="drag=false" tag="tbody">
-              <tr v-for="(choice, index) in candidates" :key="choice">
-                <td>#{{ index + 1 }}</td>
-                <td>{{ choice }}</td>
-                <td>
-                  <b-button
-                    @click="candidates = candidates.filter(x => x !== choice)"
-                    class="is-danger"
-                    icon-left="delete"
-                    type="is-small"
-                  >
-                    <small>Don't vote for this candidate</small>
-                  </b-button>
-                </td>
+
+          <div v-if="ended" id="expired-poll">
+            <section class="section hero is-danger">
+              <h1 class="title">
+                Poll expired
+              </h1>
+
+              <p>
+                Viewing expired polls is not currently supported.
+                <!-- TODO: implement -->
+              </p>
+            </section>
+          </div>
+
+          <div id="ongoing-poll" v-else>
+            <p>
+            </p>
+            <p>
+            </p>
+
+            <b-message
+              v-if="isIPOnly"
+              type="is-info"
+              aria-close-label="Close message">
+              This poll was created on
+              {{ creationTime.toLocaleString(undefined, { dateStyle: 'full', timeStyle: 'short' }) }};
+              it will expire on {{ endTime.toLocaleString(undefined, { dateStyle: 'full', timeStyle: 'short' }) }}.
+              <br />
+              This poll will ultimately have <strong>{{ numWinners }}</strong> winner{{ numWinners === 1 ? '' : ' ' }}.
+              <br />
+              {{ numVotes }} vote{{ numVotes === 1 ? '' : 's' }} have been cast in this poll so far.
+              <br />
+              <strong>Your IP address will be recorded when you vote in this poll; it will be used to prevent double voting.</strong>
+            </b-message>
+
+          <h2 class="title" style="font-size:1.5rem;">Rank your choices</h2>
+          <!-- TODO: add info question mark here -->
+          <table class="table is-striped is-hoverable is-fullwidth">
+            <thead>
+              <tr>
+                <th scope="col">Rank</th>
+                <th scope="col">Choice</th>
+                <th /> <!-- Removal button -->
               </tr>
-            </draggable>
-        </table>
+            </thead>
+              <draggable v-model="candidates" group="people" @start="drag=true" @end="drag=false" tag="tbody">
+                <tr v-for="(choice, index) in candidates" :key="choice">
+                  <td>#{{ index + 1 }}</td>
+                  <td>{{ choice }}</td>
+                  <td>
+                    <b-button
+                      @click="candidates = candidates.filter(x => x !== choice)"
+                      class="is-danger"
+                      icon-left="delete"
+                      type="is-small"
+                    >
+                      <small>Don't vote for this candidate</small>
+                    </b-button>
+                  </td>
+                </tr>
+              </draggable>
+          </table>
+          </div>
         </section>
     </main>
 </template>
@@ -74,7 +112,7 @@ export default Vue.extend({
       this.name = data.name
       this.candidates = data.candidates
       this.creationTime = new Date(data.creationTime * 1000)
-      this.endTime = new Date(data.endTime * 1000)
+      this.endTime = new Date(data.endingTime * 1000)
       this.numWinners = data.numWinners
       this.isIPOnly = data.protection === 'ip'
       this.numVotes = data.numVotes
