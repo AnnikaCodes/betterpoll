@@ -24,13 +24,6 @@ CREATE TABLE votes (
     preferences TEXT[] NOT NULL
 );
 
-CREATE TABLE winners (
-    poll_id TEXT NOT NULL REFERENCES polls(id),
-    candidate TEXT NOT NULL,
-    rank INTEGER NOT NULL,
-    PRIMARY KEY (poll_id, candidate)
-);
-
 CREATE TABLE db_info (
     version INTEGER NOT NULL
 );

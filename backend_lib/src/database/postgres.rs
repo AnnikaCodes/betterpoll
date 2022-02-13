@@ -39,32 +39,6 @@ impl PostgresConnection {
         };
         let num_winners: i32 = poll_row.try_get("num_winners")?;
 
-        let cloned_id = id.clone();
-        let winners_rows = self
-            .run(move |c| c.query("SELECT * FROM winners WHERE poll_id = $1", &[&cloned_id]))
-            .await?;
-        let mut winners_vec = Vec::with_capacity(winners_rows.len());
-        for row in winners_rows {
-            let candidate: String = row.try_get("candidate")?;
-            let rank: i32 = row.try_get("rank")?;
-            winners_vec.push(RankedCandidate {
-                candidate,
-                rank: match rank.try_into() {
-                    Ok(rank) => rank,
-                    Err(err) => {
-                        return Err(ErrorKind::Internal(InternalError::InvalidWinnerRank(
-                            rank, err,
-                        )))
-                    }
-                },
-            });
-        }
-        let winners = if winners_vec.is_empty() {
-            None
-        } else {
-            Some(winners_vec)
-        };
-
         let num_winners = match num_winners.try_into() {
             Ok(num_winners) => num_winners,
             Err(e) => {
@@ -122,7 +96,7 @@ impl PostgresConnection {
             end_time,
             prohibit_double_vote_by_ip: poll_row.try_get("prohibit_double_vote_by_ip")?,
             num_winners,
-            winners,
+            winners: None,
             votes,
             method,
         };
@@ -133,7 +107,6 @@ impl PostgresConnection {
                 .as_secs()
         {
             poll.finish()?;
-            self.set_poll_winners(poll.id.clone(), poll.winners.clone().unwrap()).await?;
         }
 
         Ok(Some(poll))
@@ -198,10 +171,6 @@ impl PostgresConnection {
             Self::add_vote_to_poll(self, id.clone(), vote).await?;
         }
 
-        if let Some(winners) = poll.winners {
-            Self::set_poll_winners(self, id, winners).await?;
-        }
-
         Ok(())
     }
 
@@ -217,24 +186,6 @@ impl PostgresConnection {
             )
         })
         .await?;
-        Ok(())
-    }
-
-    pub async fn set_poll_winners(
-        &mut self,
-        id: String,
-        winners: Vec<RankedCandidate<String>>,
-    ) -> Result<(), ErrorKind> {
-        for winner in winners {
-            let id = id.clone();
-            self.run(move |c| {
-                c.query(
-                    "INSERT INTO winners (poll_id, candidate, rank) VALUES ($1, $2, $3)",
-                    &[&id, &winner.candidate, &(winner.rank as i32)],
-                )
-            })
-            .await?;
-        }
         Ok(())
     }
 }

@@ -320,7 +320,6 @@ mod tests {
         let mut conn = postgres::Client::connect(db_url, NoTls).expect("bad database connection");
 
         conn.execute("DELETE FROM votes CASCADE", &[]).unwrap();
-        conn.execute("DELETE FROM winners CASCADE", &[]).unwrap();
         conn.execute("DELETE FROM polls CASCADE", &[]).unwrap();
     }
     // TODO: test errors/bad input
