@@ -2,7 +2,6 @@
     <!-- TODO: make this work on mobile, maybe with a Buefy thing -->
     <!-- borde också highlight vilken sida man tittar på, jag kan använda an attribute for that -->
     <nav class="navbar" role="navigation" aria-label="main navigation">
-        <CSSTemplate />
         <div class="navbar-brand">
             <nuxt-link class="navbar-item" to="/">
                 <!-- TODO: Add logo -->
