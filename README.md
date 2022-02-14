@@ -1,5 +1,5 @@
 # bettervote
-[![Backend CI](https://github.com/AnnikaCodes/bettervote/actions/workflows/backend-ci.yml/badge.svg)] [![Frontend CI](https://github.com/AnnikaCodes/bettervote/actions/workflows/frontend-ci.yml/badge.svg)] ![License](https://img.shields.io/badge/License-MIT-blue.svg)
+[![Backend CI](https://github.com/AnnikaCodes/bettervote/actions/workflows/backend.yml/badge.svg)](https://github.com/AnnikaCodes/bettervote/actions/workflows/backend.yml) [![Frontend CI](https://github.com/AnnikaCodes/bettervote/actions/workflows/frontend.yml/badge.svg)](https://github.com/AnnikaCodes/bettervote/actions/workflows/frontend.yml) [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/AnnikaCodes/bettervote/blob/main/LICENSE)
 
 BetterVote is a work-in-progress website to allow users to quickly and easily create and vote in ranked-choice polls.
 
