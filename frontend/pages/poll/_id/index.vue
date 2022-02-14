@@ -1,4 +1,5 @@
 // View/vote in a poll
+// TODO:
 <template>
     <main>
         <NavigationMenu />
@@ -7,7 +8,6 @@
           <h1 class="title">
               Poll: {{ name }}
           </h1>
-
 
           <div v-if="ended" id="expired-poll">
             <section class="section hero is-danger">
@@ -22,54 +22,71 @@
             </section>
           </div>
 
-          <div id="ongoing-poll" v-else>
-            <p>
-            </p>
-            <p>
-            </p>
-
+          <div v-else id="ongoing-poll">
             <b-message
               v-if="isIPOnly"
               type="is-info"
-              aria-close-label="Close message">
+              aria-close-label="Close message"
+            >
               This poll was created on
               {{ creationTime.toLocaleString(undefined, { dateStyle: 'full', timeStyle: 'short' }) }};
               it will expire on {{ endTime.toLocaleString(undefined, { dateStyle: 'full', timeStyle: 'short' }) }}.
-              <br />
+              <br>
               This poll will ultimately have <strong>{{ numWinners }}</strong> winner{{ numWinners === 1 ? '' : ' ' }}.
-              <br />
-              {{ numVotes }} vote{{ numVotes === 1 ? '' : 's' }} have been cast in this poll so far.
-              <br />
-              <strong>Your IP address will be recorded when you vote in this poll; it will be used to prevent double voting.</strong>
+              <br>
+              {{ numVotes }} vote{{ numVotes === 1 ? ' has' : 's have' }} been cast in this poll so far.
+              <br>
+              <strong>
+                Your IP address will be recorded when you vote in this poll; it will be used to prevent double voting.
+              </strong>
             </b-message>
 
-          <h2 class="title" style="font-size:1.5rem;">Rank your choices</h2>
-          <!-- TODO: add info question mark here -->
-          <table class="table is-striped is-hoverable is-fullwidth">
+          <h2 class="title" style="font-size:1.5rem;">
+            Rank your choices
+            <b-tooltip
+              multilined
+              type="is-primary"
+              label="
+                Drag and drop the choices into your preferred order.
+                If you don't want to vote for a choice at all, click the red button to remove it.
+              "
+            >
+              <b-icon icon="help-circle-outline" />
+            </b-tooltip>
+          </h2>
+          <table class="table is-hoverable is-fullwidth">
             <thead>
               <tr>
-                <th scope="col">Rank</th>
-                <th scope="col">Choice</th>
+                <!-- TODO: consider making Rank a separate table -->
+                <th scope="col">
+                  Rank
+                </th>
+                <th scope="col">
+                  Choice
+                </th>
                 <th /> <!-- Removal button -->
               </tr>
             </thead>
-              <draggable v-model="candidates" group="people" @start="drag=true" @end="drag=false" tag="tbody">
+              <draggable v-model="candidates" group="people" tag="tbody" @start="drag=true" @end="drag=false">
                 <tr v-for="(choice, index) in candidates" :key="choice">
                   <td>#{{ index + 1 }}</td>
                   <td>{{ choice }}</td>
                   <td>
                     <b-button
-                      @click="candidates = candidates.filter(x => x !== choice)"
                       class="is-danger"
                       icon-left="delete"
-                      type="is-small"
-                    >
-                      <small>Don't vote for this candidate</small>
-                    </b-button>
+                      @click="candidates = candidates.filter(x => x !== choice)"
+                    />
                   </td>
                 </tr>
               </draggable>
           </table>
+
+          <div class="control">
+            <button class="button is-link" @click="submit">
+                Vote
+            </button>
+          </div>
           </div>
         </section>
     </main>
@@ -78,10 +95,13 @@
 <script lang="ts">
 import Vue from 'vue'
 import draggable from 'vuedraggable'
-import { BETTERVOTE_API_URL, DOMAIN } from '../../../constants'
+import { BETTERVOTE_API_URL } from '../../../constants'
 
 export default Vue.extend({
   name: 'IndexPage',
+  components: {
+    draggable,
+  },
   data() {
     return {
       name: '',
@@ -127,8 +147,50 @@ export default Vue.extend({
       console.error(`An error occurred GETing /poll/${id}: ${e} ${JSON.stringify(e)}`)
     }
   },
-  components: {
-      draggable,
-  }
+  methods: {
+    async submit() {
+      const id = this.$route.params.id
+      if (!this.candidates.length) {
+        this.$buefy.toast.open({
+          duration: 5000,
+          message: 'You must select at least one candidate!',
+          type: 'is-danger',
+        })
+        this.$router.push(`/poll/${id}`)
+      }
+      this.isLoading = true
+
+      try {
+        const data = await this.$axios.$post(`${BETTERVOTE_API_URL}/poll/${id}/vote`, {
+          choices: this.candidates,
+        })
+
+        if (!data.success) {
+          this.isLoading = false
+          this.$buefy.toast.open({
+            duration: 5000,
+            message: data.error || 'There was an error voting in the poll',
+            type: 'is-danger',
+          })
+        } else {
+          // Success!
+          this.isLoading = false
+          this.$buefy.toast.open({
+            duration: 5000,
+            message: 'You have voted successfully!',
+            type: 'is-success',
+          })
+        }
+      } catch (e) {
+        this.isLoading = false
+        this.$buefy.toast.open({
+          duration: 5000,
+          message: 'An error occured contacting our servers; make sure you are connected to the Internet',
+          type: 'is-danger',
+        })
+        console.error(`An error occurred while POSTing to /poll/${id}/vote: ${e} ${JSON.stringify(e)}`)
+      }
+    },
+  },
 })
 </script>
