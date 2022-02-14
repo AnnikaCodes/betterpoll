@@ -21,7 +21,6 @@ fn handle_error(e: ErrorKind) -> Value {
             eprintln!("{:?}", backtrace::Backtrace::new());
             json!({ "error": "Sorry, an internal server error occured. The server's administrators have been notified.", "success": false })
         }
-        ErrorKind::PubliclyVisible(e) => json!({ "error": format!("{}", e), "success": false }),
     }
 }
 
@@ -61,7 +60,7 @@ async fn vote(
         Err(e) => return handle_error(e),
     };
 
-    if vote.ranked_choices.len() < 1 || vote.ranked_choices.len() > poll.candidates.len() {
+    if vote.ranked_choices.is_empty() || vote.ranked_choices.len() > poll.candidates.len() {
         return json!({
             "error": format!("You must vote for between 1 and {} candidates", poll.candidates.len()),
             "success": false,
@@ -208,7 +207,7 @@ async fn create(mut conn: PostgresConnection, data: Json<CreateAPIRequestData<'_
     };
 
     // Validate name
-    if request.name.len() > 1024 || request.name.len() <= 0 {
+    if request.name.len() > 1024 || request.name.is_empty() {
         return json!({
             "error": "The name must be between 1 and 1,024 characters.",
             "success": false,
@@ -335,6 +334,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(feature = "no-db-test", ignore)]
     #[serial]
     fn vote_happy_path() {
         let client = create_client();
@@ -383,6 +383,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(feature = "no-db-test", ignore)]
     #[serial]
     fn vote_invalid_candidates() {
         let client = create_client();
@@ -421,6 +422,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(feature = "no-db-test", ignore)]
     #[serial]
     fn vote_nonexistent_poll() {
         let client = create_client();
@@ -474,6 +476,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(feature = "no-db-test", ignore)]
     #[serial]
     fn vote_ip_duplicate() {
         let client = create_client();
@@ -512,6 +515,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(feature = "no-db-test", ignore)]
     #[serial]
     fn create_happy_path() {
         let client = create_client();
@@ -598,6 +602,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(feature = "no-db-test", ignore)]
     #[serial]
     fn create_missing_params() {
         let client = create_client();
@@ -635,6 +640,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(feature = "no-db-test", ignore)]
     #[serial]
     fn create_id_exists() {
         let client = create_client();
@@ -668,6 +674,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(feature = "no-db-test", ignore)]
     #[serial]
     fn create_not_enough_candidates() {
         let client = create_client();
@@ -688,6 +695,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(feature = "no-db-test", ignore)]
     #[serial]
     fn create_negative_duration() {
         let client = create_client();
@@ -708,6 +716,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(feature = "no-db-test", ignore)]
     #[serial]
     fn create_bad_num_winners() {
         let client = create_client();
@@ -730,6 +739,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(feature = "no-db-test", ignore)]
     #[serial]
     fn create_bad_id() {
         let client = create_client();
@@ -761,6 +771,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(feature = "no-db-test", ignore)]
     #[serial]
     fn create_bad_protection() {
         let client = create_client();
@@ -782,6 +793,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(feature = "no-db-test", ignore)]
     #[serial]
     fn poll_info_happy_path() {
         let client = create_client();
@@ -882,6 +894,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(feature = "no-db-test", ignore)]
     #[serial]
     fn poll_info_nonexistent() {
         let client = create_client();

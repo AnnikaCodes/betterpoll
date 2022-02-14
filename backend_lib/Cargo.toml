@@ -23,7 +23,7 @@ default-features = false
 features = ["postgres_pool"]
 
 [features]
-db-test = []
+no-db-test = []
 
 [dev-dependencies]
 serial_test = "0.5.1"

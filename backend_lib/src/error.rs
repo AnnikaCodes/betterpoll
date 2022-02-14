@@ -6,7 +6,6 @@ use std::{fmt::Display, num::TryFromIntError};
 
 #[derive(Debug)]
 pub enum ErrorKind {
-    PubliclyVisible(VisibleError),
     Internal(InternalError),
 }
 
@@ -21,14 +20,12 @@ where
 
 #[derive(Debug)]
 pub enum VisibleError {
-    PollDoesNotExist,
+    // Reserved for future errors
 }
 
 impl Display for VisibleError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            VisibleError::PollDoesNotExist => write!(f, "No poll was found with the specified ID"),
-        }
+    fn fmt(&self, _: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        unreachable!("this should never happen");
     }
 }
 
@@ -37,7 +34,6 @@ pub enum InternalError {
     Database(postgres::Error),
     UnknownVotingMethodDiscriminant(i32),
     InvalidNumWinners(i32, TryFromIntError),
-    InvalidWinnerRank(i32, TryFromIntError),
     TallyStick(tallystick::TallyError),
     CouldNotConvertDBTimeToUNIX(std::time::SystemTimeError, String),
     InvalidCreationTime(String, u64),
