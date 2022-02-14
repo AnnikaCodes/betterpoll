@@ -1,4 +1,3 @@
-/coverage
-/target
+/backend/target
 /.env
-Rocket.toml
+/backend/Rocket.toml

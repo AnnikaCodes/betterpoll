@@ -1,8 +1,13 @@
 # bettervote
-The main logic is in `bv_backend/` so that it can be effectively fuzz tested.
+[![Backend CI](https://github.com/AnnikaCodes/bettervote/actions/workflows/backend-ci.yml/badge.svg)] [![Frontend CI](https://github.com/AnnikaCodes/bettervote/actions/workflows/frontend-ci.yml/badge.svg)] ![License](https://img.shields.io/badge/License-MIT-blue.svg)
 
-## API
-Bettervote exposes a RESTful API:
+BetterVote is a work-in-progress website to allow users to quickly and easily create and vote in ranked-choice polls.
+
+Please note: this project is very new. There are many TODOs littered around the code, and it is not even ready to be publicly deployed in a testing phase.
+
+## Backend
+### API
+BetterVote's backend (whose source code is located in the `backend/` directory) exposes a REST-ish API:
 - `POST /poll/<pollid>/vote` with candidate choices to vote
     - Provided data should be JSON of the form `{"choices":[]}`, where the `choices` key is an array of candidate strings
     - Response will be `{"success": true}` or equivalent JSON if the vote succeeds, and `{"success": false, "error": <errorstring>}` or equivalent if it fails (where `<errorstring>` is a string explaining the error that occured)
@@ -31,20 +36,20 @@ Bettervote exposes a RESTful API:
         - `protection` (string): the protection method to use to prevent double voting. Currently, the only acceptable values are `ip` (prevents multiple votes from the same IP address) and `none` (allows all incoming votes). In the future, more protection methods may be implemented.
     - Response on success is JSON of the form `{"success": true, "id": <id>}`, where `<id>` is the poll's ID. On error, the response will be JSON of the form `{"success": false, "error": <errorstring>}`, where `<errorstring>` is a human-readable string describing the error that occurred.
 
-
-A frontend will also need to be worked out.
-That can probably go into a separate repository, but should access this API from the browser
-and have a pretty interface.
-
-TODO: look into different frontend frameworks (Vue? Svelte? Flutter?).
-
-## Database
-Implements a way to store information needed for the website.
+### Database
+BetterVote currently uses PostgreSQL for its database, although it's possible that alternative databases will be added in the future.
 
 Database tests can be disabled with the `no-db-test` feature.
 
+There is a database schema at `backend/schema.sql`; you'll need to run this to set up the requisite tables before starting the backend server.
+
+## Frontend
+BetterVote's frontend is written in Vue and located in the `frontend/` directory.
+
+I plan to generate a static site from this that can be served through something like GitHub Pages.
+
 ## Configuration
-Configure the databases in `Rocket.toml`; an example is provided (TODO: link here).
+Configure the databases in `Rocket.toml`; an [example](https://github.com/AnnikaCodes/bettervote/blob/main/backend/Rocket.example.toml) is provided.
 
 ## Voting algorithms
-Use [`tallystick`](https://crates.io/crate/tallystick) to get the Schulze method etc.
+[`tallystick`](https://crates.io/crate/tallystick) is used to provide implementations of the voting algorithms. Currently, only the Schulze method is supported, but it's definitely possible to add more in the future.

@@ -1,10 +1,10 @@
-name: CI
+name: Backend CI
 
 on:
   push:
-    branches: [ main, rust ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, rust ]
+    branches: [ main ]
 
 env:
   CARGO_TERM_COLOR: always
@@ -23,11 +23,14 @@ jobs:
           override: true
           components: rustfmt, clippy
     - name: Build
-      run: cargo build --verbose
+      run: cd backend cargo build --verbose
+      working-directory: backend
     - name: Lint
       uses: actions-rs/clippy-check@v1
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         args: --all-features --no-deps -- --deny warnings
+        working-directory: backend
     - name: Test
       run: cargo test no-db-test
+      working-directory: backend

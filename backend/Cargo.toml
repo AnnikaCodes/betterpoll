@@ -1,5 +1,5 @@
 [package]
-name = "backend_lib"
+name = "bettervote"
 version = "0.1.0"
 edition = "2021"
 
