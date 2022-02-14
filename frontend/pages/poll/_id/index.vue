@@ -10,33 +10,49 @@
           </h1>
 
           <div v-if="ended" id="expired-poll">
-            <section class="section hero is-danger">
-              <h1 class="title">
-                Poll expired
-              </h1>
+            <b-message
+              type="is-info"
+              aria-close-label="Close message"
+            >
+              <strong>This poll has ended.</strong>
+              <br>
+              This poll was created on
+              {{ creationTime.toLocaleString(undefined, { dateStyle: 'full', timeStyle: 'short' }) }}
+              and ended on {{ endTime.toLocaleString(undefined, { dateStyle: 'full', timeStyle: 'short' }) }}.
+              <br>
+              {{ numVotes }} vote{{ numVotes === 1 ? '' : 's' }} were cast in this poll.
+            </b-message>
 
-              <p>
-                Viewing expired polls is not currently supported.
-                <!-- TODO: implement -->
-              </p>
-            </section>
+            <div v-if="winners.length === 0" id="no-winners">
+              There were no winners.
+            </div>
+            <div v-else>
+              <!-- TODO: move CSS to a .css file -->
+              <h2 class="title" style="font-size:1.5rem;font-weight:normal">
+                Winner{{ winners.length > 1 ? 's' : '' }}: <span v-for="(winner, index) in winners" :key="winner">
+                  <b>{{ winner }}</b>{{ ((index === winners.length - 1) || (winners.length === 2)) ? '' : ', ' }}{{
+                    index === winners.length - 2 ? ' and ' : ''
+                  }}
+                </span>
+              </h2>
+            </div>
           </div>
 
           <div v-else id="ongoing-poll">
             <b-message
-              v-if="isIPOnly"
               type="is-info"
               aria-close-label="Close message"
             >
               This poll was created on
               {{ creationTime.toLocaleString(undefined, { dateStyle: 'full', timeStyle: 'short' }) }};
-              it will expire on {{ endTime.toLocaleString(undefined, { dateStyle: 'full', timeStyle: 'short' }) }}.
+              it will end on {{ endTime.toLocaleString(undefined, { dateStyle: 'full', timeStyle: 'short' }) }}.
               <br>
-              This poll will ultimately have <strong>{{ numWinners }}</strong> winner{{ numWinners === 1 ? '' : ' ' }}.
+              This poll will ultimately have <strong>{{ numWinners }}</strong>
+              winner{{ numWinners === 1 ? '' : ' ' }}.
               <br>
               {{ numVotes }} vote{{ numVotes === 1 ? ' has' : 's have' }} been cast in this poll so far.
               <br>
-              <strong>
+              <strong v-if="isIPOnly">
                 Your IP address will be recorded when you vote in this poll; it will be used to prevent double voting.
               </strong>
             </b-message>
@@ -106,12 +122,13 @@ export default Vue.extend({
     return {
       name: '',
       candidates: [],
-      creationTime: null as Date | null,
-      endTime: null as Date | null,
+      creationTime: new Date(0),
+      endTime: new Date(0),
       numWinners: 0,
       isIPOnly: false,
       numVotes: 0,
       ended: false,
+      winners: undefined as string[] | undefined,
       isLoading: true,
       drag: false,
     }
@@ -134,6 +151,7 @@ export default Vue.extend({
       this.creationTime = new Date(data.creationTime * 1000)
       this.endTime = new Date(data.endingTime * 1000)
       this.numWinners = data.numWinners
+      this.winners = data.winners
       this.isIPOnly = data.protection === 'ip'
       this.numVotes = data.numVotes
       this.ended = data.ended
@@ -180,6 +198,7 @@ export default Vue.extend({
             message: 'You have voted successfully!',
             type: 'is-success',
           })
+          this.$forceUpdate()
         }
       } catch (e) {
         this.isLoading = false
