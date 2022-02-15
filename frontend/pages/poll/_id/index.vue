@@ -39,6 +39,7 @@
 
           <div v-else id="ongoing-poll">
             <b-message
+              v-if="exists"
               type="is-info"
               aria-close-label="Close message"
             >
@@ -55,8 +56,12 @@
                 Your IP address will be recorded when you vote in this poll; it will be used to prevent double voting.
               </strong>
             </b-message>
+            <b-message v-else type="is-info">
+              This poll does not exist.
+            </b-message>
 
-          <h2 class="title" style="font-size:1.5rem;">
+
+          <h2 v-if="exists" class="title" style="font-size:1.5rem;">
             Rank your choices
             <b-tooltip
               multilined
@@ -130,6 +135,7 @@ export default Vue.extend({
       winners: undefined as string[] | undefined,
       isLoading: true,
       drag: false,
+      exists: false,
     }
   },
   async mounted() {
@@ -143,7 +149,8 @@ export default Vue.extend({
           message: data.error,
           type: 'is-danger',
         })
-        this.$router.push('/')
+        this.isLoading = false
+        return
       }
       this.name = data.name
       this.candidates = data.candidates
@@ -154,6 +161,7 @@ export default Vue.extend({
       this.isIPOnly = data.protection === 'ip'
       this.numVotes = data.numVotes
       this.ended = data.ended
+      this.exists = true
       this.isLoading = false
     } catch (e) {
       this.$buefy.toast.open({
