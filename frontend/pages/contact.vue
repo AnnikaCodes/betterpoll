@@ -1,6 +1,6 @@
 <template>
     <main>
-        <NavigationMenu />
+        <NavigationMenu current="/contact" />
         <section class="section">
             <div>
                 <h1 class="title">

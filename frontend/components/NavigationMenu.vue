@@ -1,47 +1,59 @@
 <template>
-    <!-- TODO: make this work on mobile, maybe with a Buefy thing -->
     <!-- should also highlight which page you're looking at -- use something like <NavigationMenu current="/new" /> -->
-    <nav class="navbar" role="navigation" aria-label="main navigation">
-        <div class="navbar-brand">
+    <b-navbar>
+        <template #brand>
             <nuxt-link class="navbar-item" to="/">
-                <!-- TODO: Make and add logo -->
+                <!-- TODO: Make and add logo once we know the domain name -->
                 <img
                     src="https://www.foundrygroup.com/wp-content/uploads/2018/02/Placeholder-Logo.png"
                     width="112"
                     height="28"
                 >
             </nuxt-link>
-        </div>
+        </template>
 
-        <div id="navbarBasicExample" class="navbar-menu">
-            <div class="navbar-start">
-                <nuxt-link class="navbar-item" to="/">
+        <template #start>
+            <b-navbar-item tag="nuxt-link" to="/">
+                <span :class="current === '/' ? 'has-text-primary' : ''">
                     Home
-                </nuxt-link>
-
-                <nuxt-link class="navbar-item" to="/new">
+                </span>
+            </b-navbar-item>
+            <b-navbar-item tag="nuxt-link" to="/new">
+                <span :class="current === '/new' ? 'has-text-primary' : ''">
                     Create
-                </nuxt-link>
-
-                <nuxt-link class="navbar-item" to="/about">
+                </span>
+            </b-navbar-item>
+            <b-navbar-item tag="nuxt-link" to="/about">
+                <span :class="current === '/about' ? 'has-text-primary' : ''">
                     About
-                </nuxt-link>
-
-                <nuxt-link class="navbar-item" to="/contact">
+                </span>
+            </b-navbar-item>
+            <b-navbar-item tag="nuxt-link" to="/contact">
+                <span :class="current === '/contact' ? 'has-text-primary' : ''">
                     Contact
-                </nuxt-link>
-            </div>
+                </span>
+            </b-navbar-item>
+        </template>
 
-            <div class="navbar-end">
-                <div class="navbar-item">
-                    <div class="buttons">
-                        <PollCreateButton />
-                        <a class="button is-primary" href="https://github.com/AnnikaCodes/bettervote">
-                            <b-icon icon="github" /><strong>GitHub</strong>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </nav>
+        <template #end>
+            <b-navbar-item class="buttons">
+                <PollCreateButton />
+                <a class="button is-primary" href="https://github.com/AnnikaCodes/bettervote">
+                    <b-icon icon="github" /><strong>GitHub</strong>
+                </a>
+            </b-navbar-item>
+        </template>
+    </b-navbar>
 </template>
+
+<script>
+export default {
+  props: {
+    current: {
+      type: String,
+      required: true,
+    },
+  },
+}
+</script>
+

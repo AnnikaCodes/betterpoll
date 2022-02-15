@@ -1,7 +1,7 @@
 // Creates a new poll by gathering information from the user and sending it to the API.
 <template>
     <main>
-        <NavigationMenu />
+        <NavigationMenu current="/new" />
 
         <section class="section">
             <h1 class="title">

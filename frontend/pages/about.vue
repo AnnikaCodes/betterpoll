@@ -1,6 +1,6 @@
 <template>
     <main>
-        <NavigationMenu />
+        <NavigationMenu current="/about" />
         <section class="hero is-info">
             <div class="hero-body">
                 <h1 class="title">
