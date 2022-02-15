@@ -1,8 +1,4 @@
-// Skapar ett nytt val!
-// Denna sida behöver samla in information från användaren och skicka det till API:n.
-// Jag vet inte hur man gör denna med Vue...
-
-// TODO: show polls (voting UI & results)
+// Creates a new poll by gathering information from the user and sending it to the API.
 <template>
     <main>
         <NavigationMenu />
@@ -39,11 +35,6 @@
             </b-field>
 
             <b-field label="Choices">
-                <!--
-                    ~~TODO: validate that there aren't 0/1 tags~~
-                    ehhhhh it's technically OK:
-                    if there are <2 tags, you won't be to set a number of winners and thus can't submit the form
-                -->
                 <b-taginput
                     v-model="candidates"
                     icon="label"
@@ -148,7 +139,6 @@ export default Vue.extend({
       try {
         const data = await this.$axios.$post(`${BETTERVOTE_API_URL}/create`, json)
         if (!data.success) {
-          // TODO: handle error, with a modal/data.error
           this.isLoading = false
           this.$buefy.toast.open({
             duration: 5000,

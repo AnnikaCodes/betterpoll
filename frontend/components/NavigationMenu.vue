@@ -1,10 +1,10 @@
 <template>
     <!-- TODO: make this work on mobile, maybe with a Buefy thing -->
-    <!-- borde också highlight vilken sida man tittar på, jag kan använda an attribute for that -->
+    <!-- should also highlight which page you're looking at -- use something like <NavigationMenu current="/new" /> -->
     <nav class="navbar" role="navigation" aria-label="main navigation">
         <div class="navbar-brand">
             <nuxt-link class="navbar-item" to="/">
-                <!-- TODO: Add logo -->
+                <!-- TODO: Make and add logo -->
                 <img
                     src="https://www.foundrygroup.com/wp-content/uploads/2018/02/Placeholder-Logo.png"
                     width="112"

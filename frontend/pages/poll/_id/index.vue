@@ -1,5 +1,4 @@
 // View/vote in a poll
-// TODO:
 <template>
     <main>
         <NavigationMenu />

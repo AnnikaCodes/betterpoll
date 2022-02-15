@@ -321,7 +321,6 @@ mod tests {
         conn.execute("DELETE FROM votes CASCADE", &[]).unwrap();
         conn.execute("DELETE FROM polls CASCADE", &[]).unwrap();
     }
-    // TODO: test errors/bad input
 
     fn post(client: &Client, path: &str, data: Value) {
         let mut req = client.post(path);
@@ -348,7 +347,6 @@ mod tests {
                 .as_i64()
                 .unwrap()
         }
-        // TODO make this assert_eq a function
         post(
             &client,
             "/create",

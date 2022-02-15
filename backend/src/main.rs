@@ -16,9 +16,6 @@ mod database;
 mod error;
 mod poll;
 
-// TODO: write unit tests for databases, APIs, etc...
-// TODO: fuzz test the APIs?
-
 #[catch(404)]
 fn not_found() -> Html<String> {
     Html(String::from(
@@ -32,7 +29,7 @@ fn bad_json() -> Value {
     json!({
         "success": false,
         "error": "You must provide valid JSON with all required fields for this endpoint specified. \
-        Refer to the API documentation at TODO: for more information.",
+        Refer to the API documentation at https://github.com/AnnikaCodes/bettervote#api for more information.",
     })
 }
 
