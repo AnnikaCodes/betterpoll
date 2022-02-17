@@ -1,5 +1,5 @@
 // View/vote in a poll
-<template>
+<template current="none">
     <main>
         <NavigationMenu />
         <b-loading v-model="isLoading" />
@@ -61,52 +61,63 @@
             </b-message>
 
 
-          <h2 v-if="exists" class="title" style="font-size:1.5rem;">
-            Rank your choices
-            <b-tooltip
-              multilined
-              type="is-primary"
-              label="
-                Drag and drop the choices into your preferred order.
-                If you don't want to vote for a choice at all, click the red button to remove it.
-              "
-            >
-              <b-icon icon="help-circle-outline" />
-            </b-tooltip>
-          </h2>
-          <table class="table is-hoverable is-fullwidth">
-            <thead>
-              <tr>
-                <!-- TODO: consider making Rank a separate table -->
-                <th scope="col">
-                  Rank
-                </th>
-                <th scope="col">
-                  Choice
-                </th>
-                <th /> <!-- Removal button -->
-              </tr>
-            </thead>
-              <draggable v-model="candidates" group="people" tag="tbody" @start="drag=true" @end="drag=false">
-                <tr v-for="(choice, index) in candidates" :key="choice">
-                  <td>#{{ index + 1 }}</td>
-                  <td>{{ choice }}</td>
-                  <td>
-                    <b-button
-                      class="is-danger"
-                      icon-left="delete"
-                      @click="candidates = candidates.filter(x => x !== choice)"
-                    />
-                  </td>
-                </tr>
-              </draggable>
-          </table>
+            <h2 v-if="exists" class="title" style="font-size:1.5rem;">
+              Rank your choices
+              <b-tooltip
+                multilined
+                type="is-primary"
+                label="
+                  Drag and drop the choices into your preferred order.
+                  If you don't want to vote for a choice at all, click the red button to remove it.
+                "
+              >
+                <b-icon icon="help-circle-outline" />
+              </b-tooltip>
+            </h2>
 
-          <div class="control">
-            <button class="button is-link" @click="submit">
-                Vote
-            </button>
-          </div>
+            <div class="flex" style="display:flex;">
+              <table class="table is-hoverable" style="height: 100%">
+                <thead>
+                  <tr>
+                    <th scope="col">
+                      Rank
+                    </th>
+                  </tr>
+                </thead>
+                    <tr v-for="(c, index) in candidates" :key="index">
+                      <td>#{{ index + 1 }}</td>
+                    </tr>
+              </table>
+              <table class="table is-hoverable is-fullwidth" style="height: 100%">
+                <thead>
+                  <tr>
+                    <th scope="col">
+                      Choice
+                    </th>
+                    <th /> <!-- Removal button -->
+                  </tr>
+                </thead>
+                  <draggable v-model="candidates" group="people" tag="tbody" @start="drag=true" @end="drag=false">
+                    <tr v-for="choice in candidates" :key="choice">
+                      <td>{{ choice }}</td>
+                      <td>
+                        <b-button
+                          class="is-danger"
+                          icon-left="delete"
+                          style="height: 1.5rem"
+                          @click="candidates = candidates.filter(x => x !== choice)"
+                        />
+                      </td>
+                    </tr>
+                  </draggable>
+              </table>
+            </div>
+
+            <div class="control">
+              <button class="button is-link" @click="submit">
+                  Vote
+              </button>
+            </div>
           </div>
         </section>
     </main>

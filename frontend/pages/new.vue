@@ -170,21 +170,25 @@ export default Vue.extend({
     },
 
     async validateID() {
-      // Can optimize this with a special, simpler check endpoint if needed
-      const url = `${BETTERVOTE_API_URL}/poll/${this.$refs.customURL.$el.children[0].value}`
+      if (!this.$refs.customURL || (this.$refs.customURL as Vue).$el) return
+      const elem = (this.$refs.customURL as Vue).$el.children[0] as HTMLInputElement
+      if (!elem) return
+
+      // Can optimize this with a special, simpler check-if-ID-is-used endpoint if needed
+      const url = `${BETTERVOTE_API_URL}/poll/${elem.value}`
 
       try {
         const data = await this.$axios.$get(url)
         if (data.success) {
-          this.$refs.customURL.$el.children[0].setCustomValidity(`A poll already exists with that URL.`)
-          this.$refs.customURL.$el.children[0].reportValidity()
+          elem.setCustomValidity(`A poll already exists with that URL.`)
+          elem.reportValidity()
           return
         }
       } catch (e) {
         // Suppress errors here — if a user has poor internet connection,
         // delaying validation is better than showing errors.
       }
-      this.$refs.customURL.$el.children[0].setCustomValidity('')
+      elem.setCustomValidity('')
     },
   },
 })
