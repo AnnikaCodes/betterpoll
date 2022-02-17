@@ -67,20 +67,20 @@
                 </b-checkbox>
             </b-field>
 
-            <!-- TODO: validate if the custom URL/ID is taken before submission -->
             <b-field label="Custom URL (optional)">
                 <p class="content">
                     {{ domain }}/poll/
                 </p>
 
                 <b-input
+                    ref="customURL"
                     v-model="id"
                     type="text"
-                    validation-message="Must be between 2 and 32 characters"
                     placeholder="Give your poll a custom URL"
                     maxlength="32"
                     minlength="2"
                     size="is-small"
+                    @change.native="validateID"
                 />
             </b-field>
 
@@ -97,6 +97,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import { BETTERVOTE_API_URL, DOMAIN } from '../constants'
+const ID_NORMAL_VALIDITY = 'Must be between 2 and 32 characters'
 
 export default Vue.extend({
   name: 'IndexPage',
@@ -112,6 +113,8 @@ export default Vue.extend({
       id: null,
       domain: `${DOMAIN}`,
       isLoading: false,
+      idCustomValidity: ID_NORMAL_VALIDITY,
+      idValidateIsLoading: false,
       name: '',
     }
   },
@@ -164,6 +167,24 @@ export default Vue.extend({
         })
         console.error(`An error occurred while POSTing to /create: ${e} ${JSON.stringify(e)}`)
       }
+    },
+
+    async validateID() {
+      // Can optimize this with a special, simpler check endpoint if needed
+      const url = `${BETTERVOTE_API_URL}/poll/${this.$refs.customURL.$el.children[0].value}`
+
+      try {
+        const data = await this.$axios.$get(url)
+        if (data.success) {
+          this.$refs.customURL.$el.children[0].setCustomValidity(`A poll already exists with that URL.`)
+          this.$refs.customURL.$el.children[0].reportValidity()
+          return
+        }
+      } catch (e) {
+        // Suppress errors here — if a user has poor internet connection,
+        // delaying validation is better than showing errors.
+      }
+      this.$refs.customURL.$el.children[0].setCustomValidity('')
     },
   },
 })
