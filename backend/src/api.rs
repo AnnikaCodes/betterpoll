@@ -273,7 +273,6 @@ async fn poll_info(mut conn: PostgresConnection, pollid: String) -> Value {
                     break;
                 }
             }
-            dbg!(&winner);
             winners_unranked.push(winner.candidate);
         }
         result["winners"] = json!(winners_unranked);
@@ -881,7 +880,6 @@ mod tests {
         assert_eq!(response_info_ended_json["protection"], Value::Null);
         assert_eq!(response_info_ended_json["numVotes"], 1i32);
         assert_eq!(response_info_ended_json["ended"], true);
-        dbg!(&response_info_ended_json);
         let winners_ended: Vec<&str> = response_info_ended_json["winners"]
             .as_array()
             .unwrap()

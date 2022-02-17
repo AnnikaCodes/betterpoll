@@ -1,7 +1,7 @@
 // View/vote in a poll
-<template current="none">
+<template>
     <main>
-        <NavigationMenu />
+        <NavigationMenu current="none" />
         <b-loading v-model="isLoading" />
         <section class="section">
           <h1 class="title">
@@ -27,7 +27,7 @@
             </div>
             <div v-else>
               <!-- TODO: move CSS to a .css file -->
-              <h2 class="title" style="font-size:1.5rem;font-weight:normal">
+              <h2 id="winners-heading" class="title">
                 Winner{{ winners.length > 1 ? 's' : '' }}: <span v-for="(winner, index) in winners" :key="winner">
                   <b>{{ winner }}</b>{{ ((index === winners.length - 1) || (winners.length === 2)) ? '' : ', ' }}{{
                     index === winners.length - 2 ? ' and ' : ''
@@ -48,7 +48,7 @@
               it will end on {{ endTime.toLocaleString(undefined, { dateStyle: 'full', timeStyle: 'short' }) }}.
               <br>
               This poll will ultimately have <strong>{{ numWinners }}</strong>
-              winner{{ numWinners === 1 ? '' : ' ' }}.
+              winner{{ numWinners === 1 ? '' : 's' }}.
               <br>
               {{ numVotes }} vote{{ numVotes === 1 ? ' has' : 's have' }} been cast in this poll so far.
               <br>
@@ -61,7 +61,7 @@
             </b-message>
 
 
-            <h2 v-if="exists" class="title" style="font-size:1.5rem;">
+            <h2 v-if="exists" class="title title-small">
               Rank your choices
               <b-tooltip
                 multilined
@@ -75,8 +75,8 @@
               </b-tooltip>
             </h2>
 
-            <div class="flex" style="display:flex;">
-              <table class="table is-hoverable" style="height: 100%">
+            <div class="flex">
+              <table class="table is-hoverable">
                 <thead>
                   <tr>
                     <th scope="col">
@@ -88,7 +88,7 @@
                       <td>#{{ index + 1 }}</td>
                     </tr>
               </table>
-              <table class="table is-hoverable is-fullwidth" style="height: 100%">
+              <table class="table is-hoverable is-fullwidth">
                 <thead>
                   <tr>
                     <th scope="col">
@@ -102,9 +102,9 @@
                       <td>{{ choice }}</td>
                       <td>
                         <b-button
+                          id="small-button"
                           class="is-danger"
                           icon-left="delete"
-                          style="height: 1.5rem"
                           @click="candidates = candidates.filter(x => x !== choice)"
                         />
                       </td>
