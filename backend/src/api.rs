@@ -1,4 +1,4 @@
-//! BetterVote API endpoints
+//! BetterPoll API endpoints
 
 use std::net::IpAddr;
 

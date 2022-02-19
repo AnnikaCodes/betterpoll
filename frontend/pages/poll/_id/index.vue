@@ -126,7 +126,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import draggable from 'vuedraggable'
-import { BETTERVOTE_API_URL } from '../../../constants'
+import { BETTERPOLL_API_URL } from '../../../constants'
 
 export default Vue.extend({
   name: 'IndexPage',
@@ -152,7 +152,7 @@ export default Vue.extend({
   async mounted() {
     const id = this.$route.params.id
     try {
-      const data = await this.$axios.$get(`${BETTERVOTE_API_URL}/poll/${id}`)
+      const data = await this.$axios.$get(`${BETTERPOLL_API_URL}/poll/${id}`)
       if (!data.success) {
         if (!data.error) throw new Error(`no error from server`)
         this.$buefy.toast.open({
@@ -197,7 +197,7 @@ export default Vue.extend({
       this.isLoading = true
 
       try {
-        const data = await this.$axios.$post(`${BETTERVOTE_API_URL}/poll/${id}/vote`, {
+        const data = await this.$axios.$post(`${BETTERPOLL_API_URL}/poll/${id}/vote`, {
           choices: this.candidates,
         })
 

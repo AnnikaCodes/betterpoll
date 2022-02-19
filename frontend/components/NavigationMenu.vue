@@ -3,12 +3,7 @@
     <b-navbar>
         <template #brand>
             <nuxt-link class="navbar-item" to="/">
-                <!-- TODO: Make and add logo once we know the domain name -->
-                <img
-                    src="https://www.foundrygroup.com/wp-content/uploads/2018/02/Placeholder-Logo.png"
-                    width="112"
-                    height="28"
-                >
+                <img src="/navbar-logo.png">
             </nuxt-link>
         </template>
 
@@ -38,7 +33,7 @@
         <template #end>
             <b-navbar-item class="buttons">
                 <PollCreateButton />
-                <a class="button is-primary" href="https://github.com/AnnikaCodes/bettervote">
+                <a class="button is-primary" href="https://github.com/AnnikaCodes/betterpoll">
                     <b-icon icon="github" /><strong>GitHub</strong>
                 </a>
             </b-navbar-item>

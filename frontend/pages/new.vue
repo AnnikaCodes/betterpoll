@@ -96,7 +96,7 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import { BETTERVOTE_API_URL, DOMAIN } from '../constants'
+import { BETTERPOLL_API_URL, DOMAIN } from '../constants'
 const ID_NORMAL_VALIDITY = 'Must be between 2 and 32 characters'
 
 export default Vue.extend({
@@ -140,7 +140,7 @@ export default Vue.extend({
       }
 
       try {
-        const data = await this.$axios.$post(`${BETTERVOTE_API_URL}/create`, json)
+        const data = await this.$axios.$post(`${BETTERPOLL_API_URL}/create`, json)
         if (!data.success) {
           this.isLoading = false
           this.$buefy.toast.open({
@@ -175,7 +175,7 @@ export default Vue.extend({
       if (!elem) return
 
       // Can optimize this with a special, simpler check-if-ID-is-used endpoint if needed
-      const url = `${BETTERVOTE_API_URL}/poll/${elem.value}`
+      const url = `${BETTERPOLL_API_URL}/poll/${elem.value}`
 
       try {
         const data = await this.$axios.$get(url)

@@ -8,8 +8,8 @@
                 </h1>
 
                 <p>
-                    You can get in touch with BetterVote's creator via email at
-                    <a href="mailto:annika0uwu+bettervote@gmail.com">annika0uwu+bettervote@gmail.com</a>.
+                    You can get in touch with BetterPoll's creator via email at
+                    <a href="mailto:annika0uwu+betterpoll@gmail.com">annika0uwu+betterpoll@gmail.com</a>.
 
                     We welcome your feedback!
                 </p>

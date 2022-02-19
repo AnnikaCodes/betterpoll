@@ -1,4 +1,4 @@
--- PostgreSQL schema for bettervote
+-- PostgreSQL schema for betterpoll
 
 BEGIN TRANSACTION;
 

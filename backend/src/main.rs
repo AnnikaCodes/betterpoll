@@ -19,8 +19,8 @@ mod poll;
 #[catch(404)]
 fn not_found() -> Html<String> {
     Html(String::from(
-        "You have reached the backend API for BetterVote, a ranked-choice voting website. <br />
-        It is currently in development; see <a href='https://github.com/AnnikaCodes/bettervote'>the GitHub repository</a> for more information and API documentation."
+        "You have reached the backend API for BetterPoll, a ranked-choice voting website. <br />
+        It is currently in development; see <a href='https://github.com/AnnikaCodes/betterpoll'>the GitHub repository</a> for more information and API documentation."
     ))
 }
 
@@ -29,7 +29,7 @@ fn bad_json() -> Value {
     json!({
         "success": false,
         "error": "You must provide valid JSON with all required fields for this endpoint specified. \
-        Refer to the API documentation at https://github.com/AnnikaCodes/bettervote#api for more information.",
+        Refer to the API documentation at https://github.com/AnnikaCodes/betterpoll#api for more information.",
     })
 }
 

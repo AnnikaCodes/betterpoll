@@ -8,7 +8,7 @@
         </p>
         <!-- eslint-disable max-len -->
         <p>
-          BetterVote is a simple way to create and share ranked-choice polls.
+          BetterPoll is a simple way to create and share ranked-choice polls.
         </p>
 
         <p>
@@ -19,7 +19,7 @@
 
         <br>
         <p>
-          BetterVote currently uses the <a href="https://en.wikipedia.org/wiki/Schulze_method" class="has-text-black">Schulze method</a> of ranked-choice voting, but other methods may be added in the future!
+          BetterPoll currently uses the <a href="https://en.wikipedia.org/wiki/Schulze_method" class="has-text-black">Schulze method</a> of ranked-choice voting, but other methods may be added in the future!
         </p>
         <!-- eslint-enable max-len -->
       </div>
