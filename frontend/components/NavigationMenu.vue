@@ -23,19 +23,11 @@
                     About
                 </span>
             </b-navbar-item>
-            <b-navbar-item tag="nuxt-link" to="/contact">
-                <span :class="current === '/contact' ? 'has-text-primary' : ''">
-                    Contact
-                </span>
-            </b-navbar-item>
         </template>
 
         <template #end>
             <b-navbar-item class="buttons">
                 <PollCreateButton />
-                <a class="button is-primary" href="https://github.com/AnnikaCodes/betterpoll">
-                    <b-icon icon="github" /><strong>GitHub</strong>
-                </a>
             </b-navbar-item>
         </template>
     </b-navbar>

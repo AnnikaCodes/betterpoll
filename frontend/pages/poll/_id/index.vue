@@ -149,6 +149,11 @@ export default Vue.extend({
       exists: false,
     }
   },
+  head() {
+    return {
+      title: `${this.name || 'View poll'} | BetterPoll`,
+    }
+  },
   async mounted() {
     const id = this.$route.params.id
     try {

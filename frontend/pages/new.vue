@@ -191,5 +191,10 @@ export default Vue.extend({
       elem.setCustomValidity('')
     },
   },
+  head() {
+    return {
+      title: 'Create a poll | BetterPoll',
+    }
+  },
 })
 </script>
