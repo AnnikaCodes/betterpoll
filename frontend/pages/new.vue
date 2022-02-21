@@ -10,6 +10,7 @@
             <form
                 @submit.prevent="makePoll(
                     name,
+                    description,
                     candidates.map(c => c.toString()),
                     Math.floor((endTime - Date.now()) / 1000),
                     numWinners,
@@ -32,6 +33,16 @@
                     maxlength="1024"
                     minlength="1"
                 />
+            </b-field>
+
+            <b-field label="Description">
+              <b-input
+                v-model="description"
+                type="textarea"
+                maxlength="10000"
+                placeholder="Give your poll a description"
+                validation-message="Must be fewer than 10,000 characters"
+              />
             </b-field>
 
             <b-field label="Choices">
@@ -108,6 +119,7 @@ export default Vue.extend({
       numWinners: 1,
       title: null,
       tagValidity: '',
+      description: '',
       protection: false,
       endTime: new Date(Math.floor(Date.now() / 60_000) * 60_000 + 24 * 60 * 60 * 1000), // A day in the future
       id: null,
@@ -121,6 +133,7 @@ export default Vue.extend({
   methods: {
     async makePoll(
         name: string,
+        description: string,
         candidates: string[],
         duration: number,
         numWinners: number,
@@ -133,6 +146,7 @@ export default Vue.extend({
         candidates,
         duration,
         numWinners,
+        description,
         protection: preventDoubleVoteByIP ? 'ip' : 'none',
       }
       if (id) {

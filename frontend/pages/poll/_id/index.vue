@@ -5,8 +5,12 @@
         <b-loading v-model="isLoading" />
         <section class="section">
           <h1 class="title">
-              Poll: {{ name }}
+            Poll: {{ name }}
           </h1>
+
+          <div class="container notification">
+            {{ description }}
+          </div>
 
           <div v-if="ended" id="expired-poll">
             <b-message
@@ -136,6 +140,7 @@ export default Vue.extend({
   data() {
     return {
       name: '',
+      description: '',
       candidates: [],
       creationTime: new Date(0),
       endTime: new Date(0),
@@ -169,6 +174,7 @@ export default Vue.extend({
         return
       }
       this.name = data.name
+      this.description = data.description
       this.candidates = data.candidates
       this.creationTime = new Date(data.creationTime * 1000)
       this.endTime = new Date(data.endingTime * 1000)
