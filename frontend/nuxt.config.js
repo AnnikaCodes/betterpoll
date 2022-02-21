@@ -50,6 +50,12 @@ export default {
   build: {
   },
 
+  generate: {
+    exclude: [
+      /^\/poll/, // Poll pages are dynamic
+    ],
+  },
+
   publicRuntimeConfig: {
     API_URL: process.env.API_URL || 'https://api.somedomain.tld',
     DOMAIN: process.env.DOMAIN || 'annikacodes.github.io/betterpoll',
