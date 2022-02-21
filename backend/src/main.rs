@@ -35,8 +35,12 @@ fn bad_json() -> Value {
 
 #[launch]
 pub fn rocket() -> _ {
+    dotenv::dotenv().ok();
+    let cors_regex = std::env::var("ALLOWED_ORIGINS")
+        .expect("The environment variable ALLOWED_ORIGINS must be set to a regular expression defining allowed origins for API access.");
+
     let cors = rocket_cors::CorsOptions {
-        allowed_origins: rocket_cors::AllowedOrigins::all(),
+        allowed_origins: rocket_cors::AllowedOrigins::some_regex(&[cors_regex]),
         allowed_methods: vec![Method::Get, Method::Post].into_iter().map(From::from).collect(),
         ..Default::default()
     }

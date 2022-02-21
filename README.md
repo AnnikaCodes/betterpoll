@@ -53,5 +53,7 @@ I plan to generate a static site from this that can be served through something 
 ## Configuration
 Configure the databases in `Rocket.toml`; an [example](https://github.com/AnnikaCodes/betterpoll/blob/main/backend/Rocket.example.toml) is provided.
 
+You'll also need to specify `ALLOWED_ORIGINS` as an environment variable (or in a `.env` file); it is a regular expression specifying allowed origins for CORS.
+
 ## Voting algorithms
 [`tallystick`](https://crates.io/crate/tallystick) is used to provide implementations of the voting algorithms. Currently, only the Schulze method is supported, but it's definitely possible to add more in the future.
