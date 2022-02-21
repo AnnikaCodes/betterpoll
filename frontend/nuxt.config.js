@@ -52,7 +52,7 @@ export default {
 
   generate: {
     exclude: [
-      /^\/poll/, // Poll pages are dynamic
+      /poll/, // Poll pages are dynamic
     ],
   },
 
