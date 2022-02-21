@@ -55,5 +55,7 @@ Configure the databases in `Rocket.toml`; an [example](https://github.com/Annika
 
 You'll also need to specify `ALLOWED_ORIGINS` as an environment variable (or in a `.env` file); it is a regular expression specifying allowed origins for CORS.
 
+You may optionally specify the `API_URL` environment variable (to use an alternate backend) or the `DOMAIN` environment variable (which specifies the domain used in the UI display for custom URLs). However, this is optional; sane defaults are provided.
+
 ## Voting algorithms
 [`tallystick`](https://crates.io/crate/tallystick) is used to provide implementations of the voting algorithms. Currently, only the Schulze method is supported, but it's definitely possible to add more in the future.

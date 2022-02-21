@@ -80,7 +80,7 @@
 
             <b-field label="Custom URL (optional)">
                 <p class="content">
-                    {{ domain }}/poll/
+                    {{ $config.DOMAIN }}/poll/
                 </p>
 
                 <b-input
@@ -107,7 +107,6 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import { BETTERPOLL_API_URL, DOMAIN } from '../constants'
 const ID_NORMAL_VALIDITY = 'Must be between 2 and 32 characters'
 
 export default Vue.extend({
@@ -123,7 +122,6 @@ export default Vue.extend({
       protection: false,
       endTime: new Date(Math.floor(Date.now() / 60_000) * 60_000 + 24 * 60 * 60 * 1000), // A day in the future
       id: null,
-      domain: `${DOMAIN}`,
       isLoading: false,
       idCustomValidity: ID_NORMAL_VALIDITY,
       idValidateIsLoading: false,
@@ -154,7 +152,7 @@ export default Vue.extend({
       }
 
       try {
-        const data = await this.$axios.$post(`${BETTERPOLL_API_URL}/create`, json)
+        const data = await this.$axios.$post(`${this.$config.API_URL}/create`, json)
         if (!data.success) {
           this.isLoading = false
           this.$buefy.toast.open({
@@ -189,7 +187,7 @@ export default Vue.extend({
       if (!elem) return
 
       // Can optimize this with a special, simpler check-if-ID-is-used endpoint if needed
-      const url = `${BETTERPOLL_API_URL}/poll/${elem.value}`
+      const url = `${this.$config.API_URL}/poll/${elem.value}`
 
       try {
         const data = await this.$axios.$get(url)
