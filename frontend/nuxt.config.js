@@ -1,6 +1,9 @@
 export default {
   // Target: https://go.nuxtjs.dev/config-target
   target: 'static',
+  router: {
+    base: '/betterpoll/',
+  },
 
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
@@ -21,7 +24,7 @@ export default {
 
   // Global CSS: https://go.nuxtjs.dev/config-css
   css: [
-    '@/css/main.css',
+    '@/static/css/main.css',
   ],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins

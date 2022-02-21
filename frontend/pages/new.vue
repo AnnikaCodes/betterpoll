@@ -128,6 +128,11 @@ export default Vue.extend({
       name: '',
     }
   },
+  head() {
+    return {
+      title: 'Create a poll | BetterPoll',
+    }
+  },
   methods: {
     async makePoll(
         name: string,
@@ -202,11 +207,6 @@ export default Vue.extend({
       }
       elem.setCustomValidity('')
     },
-  },
-  head() {
-    return {
-      title: 'Create a poll | BetterPoll',
-    }
   },
 })
 </script>
