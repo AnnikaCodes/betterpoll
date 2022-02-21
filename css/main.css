@@ -1,0 +1,20 @@
+#winners-heading {
+    font-size: 1.5rem;
+    font-weight: normal;
+}
+
+.flex {
+    display: flex;
+}
+
+.table {
+    height: 100%;
+}
+
+.title-small {
+    font-size: 1.5rem;
+}
+
+#small-button {
+    height: 1.5rem;
+}
