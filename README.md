@@ -16,6 +16,7 @@ BetterPoll's backend (whose source code is located in the `backend/` directory) 
     - On success, the response will be JSON with the following properties:
         - `success` (boolean): `true`.
         - `name` (string): the name of the poll.
+        - `description` (string): the poll's description.
         - `candidates` (array of strings): choices for which users can vote.
         - `creationTime` (integer): UNIX timestamp at which the poll began (in seconds).
         - `endingTime` (integer): UNIX timestamp at which the poll ends (in seconds).
@@ -28,6 +29,7 @@ BetterPoll's backend (whose source code is located in the `backend/` directory) 
 - `POST /create` to create a poll
     - Provided data should be JSON, with the following **mandatory** properties:
         - `name` (string): the name for the poll.
+        - `description` (string): a description of the poll.
         - `candidates` (array of strings): choices for which users can vote. Should be between 2 and 1024 in length.
         - `duration` (integer): the amount of time after which the poll will expire, in seconds. Must be positive.
         - `numWinners` (integer): the number of winners that the poll can have. Must be greater than 0 and less than the number of candidates provided.

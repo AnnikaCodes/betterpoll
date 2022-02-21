@@ -88,6 +88,7 @@ impl PostgresConnection {
         let mut poll = Poll {
             id,
             title: poll_row.try_get("title")?,
+            description: poll_row.try_get("description")?,
             candidates: poll_row.try_get("candidates")?,
             creation_time,
             end_time,
@@ -143,16 +144,18 @@ impl PostgresConnection {
                 "INSERT INTO polls (
                 id,
                 title,
+                description,
                 candidates,
                 created_at,
                 prohibit_double_vote_by_ip,
                 expires_at,
                 num_winners,
                 method
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
                 &[
                     &poll.id,
                     &poll.title,
+                    &poll.description,
                     &poll.candidates,
                     &creation_time,
                     &poll.prohibit_double_vote_by_ip,

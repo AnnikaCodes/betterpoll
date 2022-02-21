@@ -27,6 +27,7 @@ pub enum VotingMethod {
 pub struct Poll {
     pub id: String,
     pub title: String,
+    pub description: String,
     pub candidates: Vec<String>,
     /// Seconds since the Epoch
     pub creation_time: u64,
@@ -43,6 +44,7 @@ impl Poll {
     pub fn new(
         id: Option<String>,
         title: String,
+        description: String,
         candidates: Vec<String>,
         length: Duration,
         num_winners: usize,
@@ -58,6 +60,7 @@ impl Poll {
         Ok(Self {
             id,
             title,
+            description,
             candidates,
             creation_time,
             end_time,
@@ -108,6 +111,7 @@ mod tests {
         let poll1 = Poll::new(
             None,
             "".to_string(),
+            "".to_string(),
             vec![],
             Duration::from_secs(1),
             1,
@@ -115,6 +119,7 @@ mod tests {
         );
         let poll2 = Poll::new(
             None,
+            "".to_string(),
             "".to_string(),
             vec![],
             Duration::from_secs(1),
@@ -132,6 +137,7 @@ mod tests {
         let id = "custom_id".to_string();
         let poll = Poll::new(
             Some(id.clone()),
+            "".to_string(),
             "".to_string(),
             vec![],
             Duration::from_secs(1),
@@ -151,6 +157,7 @@ mod tests {
 
         let mut poll = Poll::new(
             None,
+            "".to_string(),
             "".to_string(),
             vec![a.clone(), b.clone(), c.clone()],
             Duration::from_secs(1),

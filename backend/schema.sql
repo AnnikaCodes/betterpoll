@@ -6,6 +6,7 @@ CREATE TABLE polls (
     -- Doubles as the URL
     id TEXT NOT NULL PRIMARY KEY,
     title TEXT NOT NULL,
+    description TEXT NOT NULL,
     candidates TEXT[] NOT NULL,
     prohibit_double_vote_by_ip BOOLEAN NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),

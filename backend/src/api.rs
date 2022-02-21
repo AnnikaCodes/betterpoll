@@ -93,6 +93,7 @@ async fn vote(
 #[cfg_attr(fuzzing, derive(arbitrary::Arbitrary, rocket::serde::Serialize, Debug))]
 pub struct CreateAPIRequestData<'a> {
     pub name: String,
+    pub description: String,
     pub candidates: Vec<String>,
     pub duration: i64,
     #[serde(rename = "numWinners")]
@@ -214,9 +215,18 @@ async fn create(mut conn: PostgresConnection, data: Json<CreateAPIRequestData<'_
         });
     }
 
+    // Validate description
+    if request.description.len() > 10_000 {
+        return json!({
+            "error": "The name must be between 1 and 10,000 characters.",
+            "success": false,
+        });
+    }
+
     let poll = match Poll::new(
         id,
         request.name,
+        request.description,
         request.candidates,
         duration,
         num_winners,
@@ -249,6 +259,7 @@ async fn poll_info(mut conn: PostgresConnection, pollid: String) -> Value {
     let mut result = json!({
         "success": true,
         "name": poll.title,
+        "description": poll.description,
         "candidates": poll.candidates,
         "creationTime": poll.creation_time,
         "endingTime": poll.end_time,
@@ -351,6 +362,7 @@ mod tests {
             "/create",
             json!({
                 "name": "Voting Test - Happy Path",
+                "description": "This is a test of the voting system.",
                 "candidates": ["A", "B", "C", "D"],
                 "duration": 10000i32,
                 "numWinners": 1i32,
@@ -390,6 +402,7 @@ mod tests {
             "/create",
             json!({
                 "name": "Voting Test - Invalid Candidates",
+                "description": "invalid candidates",
                 "candidates": ["A", "B", "C", "D", "E"],
                 "duration": 10000i32,
                 "numWinners": 1i32,
@@ -445,6 +458,7 @@ mod tests {
             "/create",
             json!({
                 "name": "Voting Test - Expired Poll",
+                "description": "This poll will expire",
                 "candidates": ["A", "B", "C", "D"],
                 "duration": 5i32,
                 "numWinners": 1i32,
@@ -484,6 +498,7 @@ mod tests {
             "/create",
             json!({
                 "name": "Voting Test - Duplicate IP",
+                "description": "this poll forbids 2 votes from the same IP",
                 "candidates": ["A", "B", "C", "D"],
                 "duration": 10000i32,
                 "numWinners": 1i32,
@@ -522,6 +537,7 @@ mod tests {
             .post("/create")
             .json(&json!({
                 "name": "Test Poll 1",
+                "description": "This is a test poll.",
                 "candidates": ["Candidate 1", "Candidate 2", "Candidate 3"],
                 "duration": 100000i32,
                 "numWinners": 1i32,
@@ -537,6 +553,7 @@ mod tests {
             .post("/create")
             .json(&json!({
                 "name": "Test Poll 2",
+                "description": "This is another test poll.",
                 "candidates": ["Candidate 3", "Candidate 5", "Candidate 4"],
                 "duration": 10000i32,
                 "numWinners": 2i32,
@@ -554,6 +571,7 @@ mod tests {
         let response_info_1_json = response_info_1.into_json::<Value>().unwrap();
         assert_eq!(response_info_1_json["success"], true);
         assert_eq!(response_info_1_json["name"], "Test Poll 1");
+        assert_eq!(response_info_1_json["description"], "This is a test poll.");
         let candidates_1: Vec<&str> = response_info_1_json["candidates"]
             .as_array()
             .unwrap()
@@ -578,6 +596,7 @@ mod tests {
         let response_info_2_json = response_info_2.into_json::<Value>().unwrap();
         assert_eq!(response_info_2_json["success"], true);
         assert_eq!(response_info_2_json["name"], "Test Poll 2");
+        assert_eq!(response_info_2_json["description"], "This is another test poll.");
         let candidates_2: Vec<&str> = response_info_2_json["candidates"]
             .as_array()
             .unwrap()
@@ -608,6 +627,7 @@ mod tests {
         for bad_json in [
             // No name
             json!({
+                "description": "This is a test poll.",
                 "candidates": ["Candidate 1", "Candidate 2", "Candidate 3"],
                 "duration": 100000i32,
                 "numWinners": 1i32,
@@ -615,18 +635,28 @@ mod tests {
             // No numWinners
             json!({
                 "name": "Test Poll 1",
+                "description": "This is a test poll.",
                 "candidates": ["Candidate 1", "Candidate 2", "Candidate 3"],
                 "duration": 100000i32,
             }),
             // No duration
             json!({
                 "name": "Test Poll 1",
+                "description": "This is a test poll.",
                 "candidates": ["Candidate 1", "Candidate 2", "Candidate 3"],
                 "numWinners": 1i32,
             }),
             // No candidates
             json!({
                 "name": "Test Poll 1",
+                "description": "This is a test poll.",
+                "duration": 100000i32,
+                "numWinners": 1i32,
+            }),
+            // No description
+            json!({
+                "name": "Test Poll 1",
+                "candidates": ["Candidate 1", "Candidate 2", "Candidate 3"],
                 "duration": 100000i32,
                 "numWinners": 1i32,
             }),
@@ -648,6 +678,7 @@ mod tests {
             "/create",
             json!({
                 "name": "Test Poll 1",
+                "description": "This is test poll #1.",
                 "candidates": ["Candidate 1", "Candidate 2", "Candidate 3"],
                 "duration": 100000i32,
                 "numWinners": 1i32,
@@ -659,6 +690,7 @@ mod tests {
             .post("/create")
             .json(&json!({
                 "name": "A Different Name",
+                "description": "This is test poll #1.",
                 "candidates": ["A"],
                 "duration": 10000i32,
                 "numWinners": 2i32,
@@ -681,6 +713,7 @@ mod tests {
             .post("/create")
             .json(&json!({
                 "name": "Test Poll 1",
+                "description": "This is test poll #1.",
                 "candidates": ["Candidate 1"],
                 "duration": 100000i32,
                 "numWinners": 1i32,
@@ -702,6 +735,7 @@ mod tests {
             .post("/create")
             .json(&json!({
                 "name": "Test Poll 1",
+                "description": "This is test poll #1.",
                 "candidates": ["Candidate 1", "Candidate 2", "Candidate 3"],
                 "duration": -2i32,
                 "numWinners": 1i32,
@@ -724,6 +758,7 @@ mod tests {
                 .post("/create")
                 .json(&json!({
                     "name": "Test Poll",
+                    "description": "This is a test poll.",
                     "candidates": ["Candidate 1", "Candidate 2", "Candidate 3"],
                     "duration": 100000i32,
                     "numWinners": bad_num_winners,
@@ -755,6 +790,7 @@ mod tests {
                 .post("/create")
                 .json(&json!({
                     "name": "Test Poll",
+                    "description": "This is a test poll.",
                     "candidates": ["Candidate 1", "Candidate 2", "Candidate 3"],
                     "duration": 100000i32,
                     "numWinners": 1i32,
@@ -778,6 +814,7 @@ mod tests {
             .post("/create")
             .json(&json!({
                 "name": "Test Poll",
+                "description": "This is a test poll.",
                 "candidates": ["Candidate 1", "Candidate 2", "Candidate 3"],
                 "duration": 100000i32,
                 "numWinners": 1i32,
@@ -802,6 +839,7 @@ mod tests {
             "/create",
             json!({
                 "name": "Poll Info Test - Ongoing Happy Path",
+                "description": "This is a test poll to get info about an ongoing poll.",
                 "candidates": ["A", "B", "C"],
                 "duration": 10000i32,
                 "numWinners": 1i32,
@@ -830,6 +868,7 @@ mod tests {
             10000
         );
         assert_eq!(response_info_ongoing_json["numWinners"], 1i32);
+        assert_eq!(response_info_ongoing_json["description"], "This is a test poll to get info about an ongoing poll.");
         assert_eq!(response_info_ongoing_json["numVotes"], 0i32);
         assert_eq!(response_info_ongoing_json["protection"], Value::Null);
         assert_eq!(response_info_ongoing_json["ended"], false);
@@ -840,6 +879,7 @@ mod tests {
             "/create",
             json!({
                 "name": "Poll Info Test - Ended Happy Path",
+                "description": "This is a test poll to get info about an ended poll.",
                 "candidates": ["A", "B", "C"],
                 "duration": 2i32,
                 "numWinners": 1i32,
@@ -877,6 +917,7 @@ mod tests {
             2
         );
         assert_eq!(response_info_ended_json["numWinners"], 1i32);
+        assert_eq!(response_info_ended_json["description"], "This is a test poll to get info about an ended poll.");
         assert_eq!(response_info_ended_json["protection"], Value::Null);
         assert_eq!(response_info_ended_json["numVotes"], 1i32);
         assert_eq!(response_info_ended_json["ended"], true);
