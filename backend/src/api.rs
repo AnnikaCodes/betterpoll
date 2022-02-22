@@ -78,7 +78,16 @@ async fn vote(
         });
     }
 
+    let mut seen_choices = std::collections::HashSet::new();
     for choice in &vote.ranked_choices {
+        if seen_choices.contains(choice) {
+            return json!({
+                "error": format!("You cannot vote for the same candidate more than once."),
+                "success": false,
+            });
+        }
+        seen_choices.insert(choice.clone());
+
         if !poll.candidates.contains(choice) {
             return json!({
                 "error": format!("The choice '{}' is not a valid choice.", choice),
