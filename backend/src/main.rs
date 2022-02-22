@@ -6,6 +6,7 @@ use rocket::{
     response::content::Html,
     serde::json::{json, Value},
 };
+use rocket_governor::rocket_governor_catcher;
 
 #[macro_use]
 extern crate rocket;
@@ -55,7 +56,7 @@ pub fn rocket() -> _ {
     .unwrap();
 
     rocket::build()
-        .register("/", catchers![not_found, bad_json])
+        .register("/", catchers![not_found, bad_json, rocket_governor_catcher])
         .attach(PostgresConnection::fairing())
         .attach(cors)
         .mount("/", api::routes())

@@ -16,7 +16,7 @@ serde = "1.0.132"
 tallystick = "0.4.3"
 backtrace = "0.3.63"
 arbitrary = "1.0.3"
-rocket-governor = "0.1.0-rc.3"
+rocket-governor = { version = "0.1.0-rc.3", features = ["limit_info", "logger"] }
 
 [dependencies.rocket_sync_db_pools]
 version = "0.1.0-rc.1"
