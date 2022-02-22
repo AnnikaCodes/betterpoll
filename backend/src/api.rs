@@ -3,7 +3,7 @@
 use std::net::IpAddr;
 
 use rocket::serde::json::{json, Json, Value};
-use rocket::serde::{Deserialize};
+use rocket::serde::Deserialize;
 
 use crate::database::postgres::PostgresConnection;
 use crate::error::ErrorKind;
@@ -59,7 +59,6 @@ async fn vote(
         voter_ip,
     };
 
-
     let poll = match conn.get_poll_by_id(pollid.clone()).await {
         Ok(Some(poll)) => poll,
         Ok(None) => {
@@ -82,7 +81,7 @@ async fn vote(
     for choice in &vote.ranked_choices {
         if seen_choices.contains(choice) {
             return json!({
-                "error": format!("You cannot vote for the same candidate more than once."),
+                "error": "You cannot vote for the same candidate more than once.",
                 "success": false,
             });
         }
@@ -123,7 +122,11 @@ pub struct CreateAPIRequestData<'a> {
 }
 
 #[post("/create", data = "<data>")]
-async fn create(mut conn: PostgresConnection, data: Json<CreateAPIRequestData<'_>>, _rate_limit: RocketGovernor<'_ ,RateLimitGuard>) -> Value {
+async fn create(
+    mut conn: PostgresConnection,
+    data: Json<CreateAPIRequestData<'_>>,
+    _rate_limit: RocketGovernor<'_, RateLimitGuard>,
+) -> Value {
     let Json(request) = data;
 
     // Validate candidates
@@ -264,7 +267,11 @@ async fn create(mut conn: PostgresConnection, data: Json<CreateAPIRequestData<'_
 }
 
 #[get("/poll/<pollid>")]
-async fn poll_info(mut conn: PostgresConnection, pollid: String, _rate_limit: RocketGovernor<'_, RateLimitGuard>) -> Value {
+async fn poll_info(
+    mut conn: PostgresConnection,
+    pollid: String,
+    _rate_limit: RocketGovernor<'_, RateLimitGuard>,
+) -> Value {
     let poll = match conn.get_poll_by_id(pollid.clone()).await {
         Ok(Some(poll)) => poll,
         Ok(None) => {
@@ -324,7 +331,6 @@ mod tests {
     use rocket::local::blocking::Client;
     use rocket::serde::json::{json, Value};
 
-
     use serial_test::serial;
 
     fn create_client() -> Client {
@@ -372,10 +378,7 @@ mod tests {
         fn get_num_votes(c: &Client, id: &str) -> i64 {
             let mut req = c.get(format!("/poll/{}", id));
             req.set_remote(localhost_ip!());
-            req
-                .dispatch()
-                .into_json::<Value>()
-                .unwrap()["numVotes"]
+            req.dispatch().into_json::<Value>().unwrap()["numVotes"]
                 .as_i64()
                 .unwrap()
         }
@@ -444,11 +447,7 @@ mod tests {
         ] {
             let mut req = client.post("/poll/vote_invalid_candidates/vote");
             req.set_remote(localhost_ip!());
-            let json = req
-                .json(&bad_json)
-                .dispatch()
-                .into_json::<Value>()
-                .unwrap();
+            let json = req.json(&bad_json).dispatch().into_json::<Value>().unwrap();
             dbg!(bad_json, &json);
             assert_eq!(json["success"], false);
             assert!(!json["error"].as_str().unwrap().is_empty());
@@ -462,7 +461,7 @@ mod tests {
         let client = create_client();
         clear_db(&client);
 
-        let mut req = client .post("/poll/vote_nonexistent_poll/vote");
+        let mut req = client.post("/poll/vote_nonexistent_poll/vote");
         req.set_remote(localhost_ip!());
         let json = req
             .json(&json!({ "choices": ["A", "B", "C", "D"] }))
@@ -622,7 +621,6 @@ mod tests {
         assert_eq!(response_info_1_json["protection"], Value::Null);
         assert_eq!(response_info_1_json["ended"], false);
 
-
         let mut req = client.get("/poll/testID");
         req.set_remote(localhost_ip!());
         let response_info_2 = req.dispatch();
@@ -630,7 +628,10 @@ mod tests {
         let response_info_2_json = response_info_2.into_json::<Value>().unwrap();
         assert_eq!(response_info_2_json["success"], true);
         assert_eq!(response_info_2_json["name"], "Test Poll 2");
-        assert_eq!(response_info_2_json["description"], "This is another test poll.");
+        assert_eq!(
+            response_info_2_json["description"],
+            "This is another test poll."
+        );
         let candidates_2: Vec<&str> = response_info_2_json["candidates"]
             .as_array()
             .unwrap()
@@ -914,7 +915,10 @@ mod tests {
             10000
         );
         assert_eq!(response_info_ongoing_json["numWinners"], 1i32);
-        assert_eq!(response_info_ongoing_json["description"], "This is a test poll to get info about an ongoing poll.");
+        assert_eq!(
+            response_info_ongoing_json["description"],
+            "This is a test poll to get info about an ongoing poll."
+        );
         assert_eq!(response_info_ongoing_json["numVotes"], 0i32);
         assert_eq!(response_info_ongoing_json["protection"], Value::Null);
         assert_eq!(response_info_ongoing_json["ended"], false);
@@ -966,7 +970,10 @@ mod tests {
             2
         );
         assert_eq!(response_info_ended_json["numWinners"], 1i32);
-        assert_eq!(response_info_ended_json["description"], "This is a test poll to get info about an ended poll.");
+        assert_eq!(
+            response_info_ended_json["description"],
+            "This is a test poll to get info about an ended poll."
+        );
         assert_eq!(response_info_ended_json["protection"], Value::Null);
         assert_eq!(response_info_ended_json["numVotes"], 1i32);
         assert_eq!(response_info_ended_json["ended"], true);

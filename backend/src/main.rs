@@ -1,7 +1,11 @@
 #![feature(proc_macro_hygiene, decl_macro)]
 
 use database::postgres::PostgresConnection;
-use rocket::{response::content::Html, serde::json::{Value, json}, http::Method};
+use rocket::{
+    http::Method,
+    response::content::Html,
+    serde::json::{json, Value},
+};
 
 #[macro_use]
 extern crate rocket;
@@ -41,10 +45,14 @@ pub fn rocket() -> _ {
 
     let cors = rocket_cors::CorsOptions {
         allowed_origins: rocket_cors::AllowedOrigins::some_regex(&[cors_regex]),
-        allowed_methods: vec![Method::Get, Method::Post].into_iter().map(From::from).collect(),
+        allowed_methods: vec![Method::Get, Method::Post]
+            .into_iter()
+            .map(From::from)
+            .collect(),
         ..Default::default()
     }
-    .to_cors().unwrap();
+    .to_cors()
+    .unwrap();
 
     rocket::build()
         .register("/", catchers![not_found, bad_json])

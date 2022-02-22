@@ -1,11 +1,6 @@
 // Generic database code
 pub mod postgres;
 
-
-
-
-
-
 // Generic database trait; an implementation be used with Rocket for fun stuff
 //
 // See https://rocket.rs/v0.5-rc/guide/state/

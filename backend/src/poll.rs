@@ -9,7 +9,7 @@ use tallystick::schulze::SchulzeTally;
 use tallystick::schulze::Variant;
 use tallystick::RankedCandidate;
 
-use crate::error::{ErrorKind};
+use crate::error::ErrorKind;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct RankedChoiceVote {
@@ -102,7 +102,6 @@ impl Poll {
 
 #[cfg(test)]
 mod tests {
-
 
     use super::*;
 
