@@ -9,6 +9,16 @@ use crate::database::postgres::PostgresConnection;
 use crate::error::ErrorKind;
 use crate::poll::{Poll, RankedChoiceVote};
 
+use rocket_governor::{Method, Quota, RocketGovernable, RocketGovernor};
+
+pub struct RateLimitGuard;
+
+impl<'r> RocketGovernable<'r> for RateLimitGuard {
+    fn quota(_: Method, _: &str) -> Quota {
+        Quota::per_minute(Self::nonzero(60u32))
+    }
+}
+
 /// Returns all the routes that should be made available
 pub fn routes() -> Vec<rocket::Route> {
     routes![vote, create, poll_info]
@@ -34,6 +44,7 @@ async fn vote(
     pollid: String,
     data: Json<VoteAPIRequestData>,
     remote_addr: Option<IpAddr>,
+    _rate_limit: RocketGovernor<'_, RateLimitGuard>,
 ) -> Value {
     let Json(request) = data;
     let voter_ip = match remote_addr {
@@ -103,7 +114,7 @@ pub struct CreateAPIRequestData<'a> {
 }
 
 #[post("/create", data = "<data>")]
-async fn create(mut conn: PostgresConnection, data: Json<CreateAPIRequestData<'_>>) -> Value {
+async fn create(mut conn: PostgresConnection, data: Json<CreateAPIRequestData<'_>>, _rate_limit: RocketGovernor<'_ ,RateLimitGuard>) -> Value {
     let Json(request) = data;
 
     // Validate candidates
@@ -244,7 +255,7 @@ async fn create(mut conn: PostgresConnection, data: Json<CreateAPIRequestData<'_
 }
 
 #[get("/poll/<pollid>")]
-async fn poll_info(mut conn: PostgresConnection, pollid: String) -> Value {
+async fn poll_info(mut conn: PostgresConnection, pollid: String, _rate_limit: RocketGovernor<'_, RateLimitGuard>) -> Value {
     let poll = match conn.get_poll_by_id(pollid.clone()).await {
         Ok(Some(poll)) => poll,
         Ok(None) => {
@@ -350,7 +361,9 @@ mod tests {
         clear_db(&client);
 
         fn get_num_votes(c: &Client, id: &str) -> i64 {
-            c.get(format!("/poll/{}", id))
+            let mut req = c.get(format!("/poll/{}", id));
+            req.set_remote(localhost_ip!());
+            req
                 .dispatch()
                 .into_json::<Value>()
                 .unwrap()["numVotes"]
@@ -420,12 +433,14 @@ mod tests {
             // Duplicate candidates
             json!({ "choices": ["A", "B", "A", "C"] }),
         ] {
-            let json = client
-                .post("/poll/vote_invalid_candidates/vote")
+            let mut req = client.post("/poll/vote_invalid_candidates/vote");
+            req.set_remote(localhost_ip!());
+            let json = req
                 .json(&bad_json)
                 .dispatch()
                 .into_json::<Value>()
                 .unwrap();
+            dbg!(bad_json, &json);
             assert_eq!(json["success"], false);
             assert!(!json["error"].as_str().unwrap().is_empty());
         }
@@ -438,8 +453,9 @@ mod tests {
         let client = create_client();
         clear_db(&client);
 
-        let json = client
-            .post("/poll/vote_nonexistent_poll/vote")
+        let mut req = client .post("/poll/vote_nonexistent_poll/vote");
+        req.set_remote(localhost_ip!());
+        let json = req
             .json(&json!({ "choices": ["A", "B", "C", "D"] }))
             .dispatch()
             .into_json::<Value>()
@@ -476,8 +492,9 @@ mod tests {
 
         std::thread::sleep(std::time::Duration::from_secs(5));
 
-        let json_after_expiry = client
-            .post("/poll/vote_expired/vote")
+        let mut req = client.post("/poll/vote_expired/vote");
+        req.set_remote(localhost_ip!());
+        let json_after_expiry = req
             .json(&json!({ "choices": ["A", "B", "C", "D"] }))
             .dispatch()
             .into_json::<Value>()
@@ -516,8 +533,9 @@ mod tests {
             .unwrap();
         assert_eq!(json["success"], true);
 
-        let json = client
-            .post("/poll/vote_ip_duplicate/vote")
+        let mut req = client.post("/poll/vote_ip_duplicate/vote");
+        req.set_remote(localhost_ip!());
+        let json = req
             .json(&json!({ "choices": ["A", "B", "C", "D"] }))
             .dispatch()
             .into_json::<Value>()
@@ -533,8 +551,9 @@ mod tests {
         let client = create_client();
         clear_db(&client);
 
-        let response_create_1 = client
-            .post("/create")
+        let mut req = client.post("/create");
+        req.set_remote(localhost_ip!());
+        let response_create_1 = req
             .json(&json!({
                 "name": "Test Poll 1",
                 "description": "This is a test poll.",
@@ -549,8 +568,9 @@ mod tests {
         assert!(!test_poll_1_id.is_empty());
         assert_eq!(test_poll_1_json["success"], true);
 
-        let response_create_2 = client
-            .post("/create")
+        req = client.post("/create");
+        req.set_remote(localhost_ip!());
+        let response_create_2 = req
             .json(&json!({
                 "name": "Test Poll 2",
                 "description": "This is another test poll.",
@@ -566,7 +586,9 @@ mod tests {
         assert_eq!(test_poll_2_json["id"], "testID");
         assert_eq!(test_poll_2_json["success"], true);
 
-        let response_info_1 = client.get(format!("/poll/{}", test_poll_1_id)).dispatch();
+        let mut req = client.get(format!("/poll/{}", test_poll_1_id));
+        req.set_remote(localhost_ip!());
+        let response_info_1 = req.dispatch();
         assert_eq!(response_info_1.status(), Status::Ok);
         let response_info_1_json = response_info_1.into_json::<Value>().unwrap();
         assert_eq!(response_info_1_json["success"], true);
@@ -591,7 +613,10 @@ mod tests {
         assert_eq!(response_info_1_json["protection"], Value::Null);
         assert_eq!(response_info_1_json["ended"], false);
 
-        let response_info_2 = client.get("/poll/testID").dispatch();
+
+        let mut req = client.get("/poll/testID");
+        req.set_remote(localhost_ip!());
+        let response_info_2 = req.dispatch();
         assert_eq!(response_info_2.status(), Status::Ok);
         let response_info_2_json = response_info_2.into_json::<Value>().unwrap();
         assert_eq!(response_info_2_json["success"], true);
@@ -661,7 +686,10 @@ mod tests {
                 "numWinners": 1i32,
             }),
         ] {
-            let response = client.post("/create").json(&bad_json).dispatch();
+            let mut req = client.post("/create");
+            req.set_remote(localhost_ip!());
+
+            let response = req.json(&bad_json).dispatch();
             assert_eq!(response.status(), Status::UnprocessableEntity);
         }
     }
@@ -686,8 +714,9 @@ mod tests {
             }),
         );
 
-        let response = client
-            .post("/create")
+        let mut req = client.post("/create");
+        req.set_remote(localhost_ip!());
+        let response = req
             .json(&json!({
                 "name": "A Different Name",
                 "description": "This is test poll #1.",
@@ -709,8 +738,9 @@ mod tests {
         let client = create_client();
         clear_db(&client);
 
-        let response = client
-            .post("/create")
+        let mut req = client.post("/create");
+        req.set_remote(localhost_ip!());
+        let response = req
             .json(&json!({
                 "name": "Test Poll 1",
                 "description": "This is test poll #1.",
@@ -731,8 +761,9 @@ mod tests {
         let client = create_client();
         clear_db(&client);
 
-        let response = client
-            .post("/create")
+        let mut req = client.post("/create");
+        req.set_remote(localhost_ip!());
+        let response = req
             .json(&json!({
                 "name": "Test Poll 1",
                 "description": "This is test poll #1.",
@@ -754,8 +785,9 @@ mod tests {
         clear_db(&client);
 
         for bad_num_winners in [-1i32, 0i32, 3i32, 5i32] {
-            let response = client
-                .post("/create")
+            let mut req = client.post("/create");
+            req.set_remote(localhost_ip!());
+            let response = req
                 .json(&json!({
                     "name": "Test Poll",
                     "description": "This is a test poll.",
@@ -786,8 +818,9 @@ mod tests {
             "&a&&",
             "a??b",
         ] {
-            let response = client
-                .post("/create")
+            let mut req = client.post("/create");
+            req.set_remote(localhost_ip!());
+            let response = req
                 .json(&json!({
                     "name": "Test Poll",
                     "description": "This is a test poll.",
@@ -810,8 +843,9 @@ mod tests {
         let client = create_client();
         clear_db(&client);
 
-        let response = client
-            .post("/create")
+        let mut req = client.post("/create");
+        req.set_remote(localhost_ip!());
+        let response = req
             .json(&json!({
                 "name": "Test Poll",
                 "description": "This is a test poll.",
@@ -847,7 +881,10 @@ mod tests {
             }),
         );
 
-        let response_info_ongoing = client.get("/poll/ongoing_happy").dispatch();
+        let mut req = client.get("/poll/ongoing_happy");
+        req.set_remote(localhost_ip!());
+
+        let response_info_ongoing = req.dispatch();
         assert_eq!(response_info_ongoing.status(), Status::Ok);
         let response_info_ongoing_json = response_info_ongoing.into_json::<Value>().unwrap();
         assert_eq!(response_info_ongoing_json["success"], true);
@@ -896,7 +933,10 @@ mod tests {
         std::thread::sleep(std::time::Duration::from_secs(3));
 
         // poll should be over now
-        let response_info_ended = client.get("/poll/ended_happy").dispatch();
+        let mut req = client.get("/poll/ended_happy");
+        req.set_remote(localhost_ip!());
+
+        let response_info_ended = req.dispatch();
         assert_eq!(response_info_ended.status(), Status::Ok);
         let response_info_ended_json = response_info_ended.into_json::<Value>().unwrap();
         assert_eq!(response_info_ended_json["success"], true);
@@ -937,7 +977,9 @@ mod tests {
         let client = create_client();
         clear_db(&client);
 
-        let response_nonexistent = client.get("/poll/nonexistent").dispatch();
+        let mut req = client.get("/poll/nonexistent");
+        req.set_remote(localhost_ip!());
+        let response_nonexistent = req.dispatch();
         assert_eq!(response_nonexistent.status(), Status::Ok);
         let response_nonexistent_json = response_nonexistent.into_json::<Value>().unwrap();
         assert_eq!(response_nonexistent_json["success"], false);
