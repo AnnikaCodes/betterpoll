@@ -57,5 +57,7 @@ You'll also need to specify `ALLOWED_ORIGINS` as an environment variable (or in 
 
 You may optionally specify the `API_URL` environment variable (to use an alternate backend) or the `DOMAIN` environment variable (which specifies the domain used in the UI display for custom URLs). However, this is optional; sane defaults are provided.
 
-## Voting algorithms
-[`tallystick`](https://crates.io/crate/tallystick) is used to provide implementations of the voting algorithms. Currently, only the Schulze method is supported, but it's definitely possible to add more in the future.
+## Credits
+Most of the libraries used can be found in the `Cargo.toml` and `package.json` files, but there are two I want to mention specifically:
+- [@phayes](https://github.com/phayes/)'s [`tallystick`](https://crates.io/crate/tallystick) library is used to provide implementations of the voting algorithms. Currently, only the Schulze method is supported, but it's definitely possible to add more in the future.
+- [@mktcode](https://github.com/mktcode/)'s [solution for dynamic routes on GitHub Pages](https://github.com/mktcode/dynamic-nuxt-gh-pages) is used to host BetterPoll statically.
