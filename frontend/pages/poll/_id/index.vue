@@ -182,7 +182,7 @@ export default Vue.extend({
       this.isLoading = false
     } catch (e) {
       let message = 'An error occured contacting our servers; make sure you are connected to the Internet'
-      if (e.response.status === 429) {
+      if (e.response && e.response.status === 429) {
         // Rate limiting!
         message = 'You are making too many requests. Please wait a bit before trying again.'
       }
@@ -232,7 +232,7 @@ export default Vue.extend({
       } catch (e) {
         this.isLoading = false
         let message = 'An error occured contacting our servers; make sure you are connected to the Internet'
-        if (e.response.status === 429) {
+        if (e.response && e.response.status === 429) {
           // Rate limiting!
           message = 'You are making too many requests. Please wait a bit before trying again.'
         }

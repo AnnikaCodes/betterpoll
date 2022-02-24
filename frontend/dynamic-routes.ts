@@ -7,8 +7,10 @@
  * @param {any} context The Nuxt middleware context
  */
 export default function(context: any) {
+  console.log(context.route, 1, context.redirect)
   const path = context.route.hash.replace('#!', '')
   if (path.length) {
     context.redirect(path)
   }
 }
+

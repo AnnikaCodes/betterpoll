@@ -3,7 +3,6 @@ export default {
   target: 'static',
   router: {
     base: '/',
-    middleware: 'dynamic-routes',
   },
 
   // Global page headers: https://go.nuxtjs.dev/config-head
@@ -49,6 +48,10 @@ export default {
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
+  },
+
+  generate: {
+    fallback: true,
   },
 
   publicRuntimeConfig: {

@@ -13,7 +13,7 @@
 
         <p>
           You might think that voting is simple: everyone gets one vote, and whoever has the most votes wins.
-          However, this simple system has some major flaws, namely that it encourages people to vote for options that are likely to popular among others, rather than just the one they like most.
+          However, this simple system has some major flaws, namely that it encourages people to vote for options that are likely to be popular among others, rather than just the one they like most.
           This is called <a href="https://en.wikipedia.org/wiki/First-past-the-post_voting#Tactical_voting" class="has-text-black">tactical voting</a>, and ranked-choice voting largely prevents this.
         </p>
 
