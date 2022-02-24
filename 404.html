@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<!-- based on mktcode's https://github.com/mktcode/dynamic-nuxt-gh-pages 404 page -->
+<html>
+  <head>
+    <title>404 Redirect</title>
+  </head>
+  <body></body>
+  <script>
+    var j = '/#!' + window.location.pathname.slice(1);
+    console.log('Redirecting to ' + j);
+    window.location.href = j;
+  </script>
+</html>
