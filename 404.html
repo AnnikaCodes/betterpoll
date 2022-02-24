@@ -6,7 +6,7 @@
   </head>
   <body></body>
   <script>
-    var j = '/#!' + window.location.pathname;
+    var j = '/#!' + window.location.pathname.slice(1);
     console.log('Redirecting to ' + j);
     window.location.href = j;
   </script>
