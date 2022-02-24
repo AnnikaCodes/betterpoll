@@ -2,7 +2,7 @@ export default {
   // Target: https://go.nuxtjs.dev/config-target
   target: 'static',
   router: {
-    base: '/betterpoll/',
+    base: '/',
     middleware: 'dynamic-routes',
   },
 
@@ -52,7 +52,7 @@ export default {
   },
 
   publicRuntimeConfig: {
-    API_URL: process.env.API_URL || 'https://api.somedomain.tld',
-    DOMAIN: process.env.DOMAIN || 'annikacodes.github.io/betterpoll',
+    API_URL: process.env.API_URL || 'https://api.betterpoll.cc/v1',
+    DOMAIN: process.env.DOMAIN || 'betterpoll.cc',
   },
 }
