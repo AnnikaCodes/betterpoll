@@ -239,7 +239,7 @@ export default Vue.extend({
             message: 'You have voted successfully!',
             type: 'is-success',
           })
-          this.$forceUpdate()
+          window.location.reload()
         }
       } catch (e) {
         this.isLoading = false
