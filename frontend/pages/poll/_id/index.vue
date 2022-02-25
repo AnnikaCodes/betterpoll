@@ -117,6 +117,17 @@
               </table>
             </div>
 
+            <b-field label="Share poll link">
+              <b-input
+                :value="shareLink"
+                style="width:min(350px, 100%);"
+                icon-right="clipboard-text-outline"
+                icon-right-clickable
+                readonly
+                @icon-right-click="copy"
+              />
+            </b-field>
+
             <div class="control">
               <button class="button is-link" @click="submit">
                   Vote
@@ -151,6 +162,7 @@ export default Vue.extend({
       isLoading: true,
       drag: false,
       exists: false,
+      shareLink: this.$config.DOMAIN + '/poll/' + this.$route.params.id,
     }
   },
   async mounted() {
@@ -243,6 +255,14 @@ export default Vue.extend({
         })
         console.error(`An error occurred while POSTing to /poll/${id}/vote: ${e} ${JSON.stringify(e)}`)
       }
+    },
+    copy() {
+      navigator.clipboard.writeText('https://' + this.shareLink)
+      this.$buefy.toast.open({
+        duration: 5000,
+        message: 'Copied link to clipboard',
+        type: 'is-success',
+      })
     },
   },
 })

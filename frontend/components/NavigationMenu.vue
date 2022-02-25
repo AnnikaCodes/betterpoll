@@ -18,9 +18,9 @@
                     Create
                 </span>
             </b-navbar-item>
-            <b-navbar-item tag="nuxt-link" to="/about">
-                <span :class="current === '/about' ? 'has-text-primary' : ''">
-                    About
+            <b-navbar-item tag="nuxt-link" to="/faq">
+                <span :class="current === '/faq' ? 'has-text-primary' : ''">
+                    Frequently Asked Questions
                 </span>
             </b-navbar-item>
         </template>
