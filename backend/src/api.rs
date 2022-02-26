@@ -12,7 +12,7 @@ use crate::poll::{Poll, RankedChoiceVote};
 
 /// Returns all the routes that should be made available
 pub fn routes() -> Vec<rocket::Route> {
-    routes![vote, create, poll_info]
+    routes![vote, create, poll_info, status]
 }
 
 fn handle_error(e: ErrorKind) -> Value {
