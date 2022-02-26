@@ -37,6 +37,11 @@ BetterPoll's backend (whose source code is located in the `backend/` directory) 
         - `id` (string): a custom URL for the poll. Must be a string composed of letters A-Z (upper or lowercase), numbers 0-9, `_`, `.` and `-`, with at least 1 and at most 32 characters.
         - `protection` (string): the protection method to use to prevent double voting. Currently, the only acceptable values are `ip` (prevents multiple votes from the same IP address) and `none` (allows all incoming votes). In the future, more protection methods may be implemented.
     - Response on success is JSON of the form `{"success": true, "id": <id>}`, where `<id>` is the poll's ID. On error, the response will be JSON of the form `{"success": false, "error": <errorstring>}`, where `<errorstring>` is a human-readable string describing the error that occurred.
+- `GET /status` to get status information
+    - Returns JSON with the following properties:
+        - `success`: `true`
+        - `total`: the total number of polls in the database, or `null` if the database is inaccessible
+        - `active`: the number of polls currently accepting votes, or `null` if the database is inaccessible
 
 ### Database
 BetterPoll currently uses PostgreSQL for its database, although it's possible that alternative databases will be added in the future.

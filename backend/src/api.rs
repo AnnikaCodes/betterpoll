@@ -321,6 +321,21 @@ async fn poll_info(
     result
 }
 
+#[get("/status")]
+async fn status(mut conn: PostgresConnection) -> Value {
+    json!({
+        "success": true,
+        "total": match conn.get_total_polls().await {
+            Ok(n) => n.into(),
+            Err(e) => Value::Null,
+        },
+        "active": match conn.get_active_polls().await {
+            Ok(n) => n.into(),
+            Err(e) => Value::Null,
+        },
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use std::net::ToSocketAddrs;
