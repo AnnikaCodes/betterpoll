@@ -315,11 +315,11 @@ async fn status(mut conn: PostgresConnection) -> Value {
         "success": true,
         "total": match conn.get_total_polls().await {
             Ok(n) => n.into(),
-            Err(e) => Value::Null,
+            Err(_) => Value::Null,
         },
         "active": match conn.get_active_polls().await {
             Ok(n) => n.into(),
-            Err(e) => Value::Null,
+            Err(_) => Value::Null,
         },
     })
 }

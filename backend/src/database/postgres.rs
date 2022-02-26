@@ -191,26 +191,23 @@ impl PostgresConnection {
 
     pub async fn get_total_polls(
         &mut self,
-    ) -> Result<i32, ErrorKind> {
+    ) -> Result<i64, ErrorKind> {
         let mut rows = self.run(move |c| c.query("SELECT COUNT(*) AS count FROM polls", &[])).await?;
         let row = rows.pop().expect("there should be exactly one row");
-        let count: i32 = row.try_get("count")?;
+        let count: i64 = row.try_get("count")?;
         Ok(count)
     }
 
     pub async fn get_active_polls(
         &mut self,
-    ) -> Result<i32, ErrorKind> {
-        let now = SystemTime::now()
-            .duration_since(SystemTime::UNIX_EPOCH)
-            .expect("can't find out how long it was since the UNIX epoch")
-            .as_secs() as i64;
+    ) -> Result<i64, ErrorKind> {
+        let now = SystemTime::now();
 
         let mut rows = self.run(move |c| {
-            c.query("SELECT COUNT(*) AS count FROM polls WHERE expires_at > ?", &[&now])
+            c.query("SELECT COUNT(*) AS count FROM polls WHERE expires_at > $1", &[&now])
         }).await?;
         let row = rows.pop().expect("there should be exactly one row");
-        let count: i32 = row.try_get("count")?;
+        let count: i64 = row.try_get("count")?;
         Ok(count)
     }
 }
