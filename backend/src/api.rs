@@ -9,15 +9,6 @@ use crate::database::postgres::PostgresConnection;
 use crate::error::ErrorKind;
 use crate::poll::{Poll, RankedChoiceVote};
 
-use rocket_governor::{Method, Quota, RocketGovernable, RocketGovernor};
-
-pub struct RateLimitGuard;
-
-impl<'r> RocketGovernable<'r> for RateLimitGuard {
-    fn quota(_: Method, _: &str) -> Quota {
-        Quota::per_minute(Self::nonzero(20u32))
-    }
-}
 
 /// Returns all the routes that should be made available
 pub fn routes() -> Vec<rocket::Route> {
@@ -44,7 +35,6 @@ async fn vote(
     pollid: String,
     data: Json<VoteAPIRequestData>,
     remote_addr: Option<IpAddr>,
-    _rate_limit: RocketGovernor<'_, RateLimitGuard>,
 ) -> Value {
     let Json(request) = data;
     let voter_ip = match remote_addr {
@@ -125,7 +115,6 @@ pub struct CreateAPIRequestData<'a> {
 async fn create(
     mut conn: PostgresConnection,
     data: Json<CreateAPIRequestData<'_>>,
-    _rate_limit: RocketGovernor<'_, RateLimitGuard>,
 ) -> Value {
     let Json(request) = data;
 
@@ -270,7 +259,6 @@ async fn create(
 async fn poll_info(
     mut conn: PostgresConnection,
     pollid: String,
-    _rate_limit: RocketGovernor<'_, RateLimitGuard>,
 ) -> Value {
     let poll = match conn.get_poll_by_id(pollid.clone()).await {
         Ok(Some(poll)) => poll,
