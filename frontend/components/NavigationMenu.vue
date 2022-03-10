@@ -23,6 +23,11 @@
                     Frequently Asked Questions
                 </span>
             </b-navbar-item>
+            <b-navbar-item tag="nuxt-link" to="/status">
+                <span :class="current === '/status' ? 'has-text-primary' : ''">
+                    Status
+                </span>
+            </b-navbar-item>
         </template>
 
         <template #end>
