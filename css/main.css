@@ -18,3 +18,14 @@
 #small-button {
     height: 1.5rem;
 }
+
+.status-box {
+    width: min(15rem, 100%);
+}
+
+.status-info {
+    font-size: 1.3rem;
+    display: flex;
+    justify-content: space-between;
+    flex-direction: row;
+}
